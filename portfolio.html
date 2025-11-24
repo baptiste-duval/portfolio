@@ -36,17 +36,20 @@
   <button onclick="showMain('entreprise')" style="padding:10px 20px; background:#3ec5ff; color:#04263b; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Travail en entreprise</button>
 </div>
 
+<!-- Onglets SAE -->
 <div class="tabs" id="tabs-sae">
   <div class="tab active" onclick="showTab('s1', this)">Semestre 1</div>
   <div class="tab" onclick="showTab('s2', this)">Semestre 2</div>
 </div>
 
-<div class="content">
-  <!-- SEMESTRE 1 -->
-  <div id="s1" class="semestre active">
-    <div class="project-card">
-      <h3>Projet 1 – SAE 501 : Infrastructure TP Conteneurisée</h3>
-      <p><strong>SAE 501 – Mise en place d’une infrastructure de TP basée sur des conteneurs.</strong><br><br>
+<!-- Contenu SAE -->
+<div id="content-sae">
+  <div class="content">
+    <!-- SEMESTRE 1 -->
+    <div id="s1" class="semestre active">
+      <div class="project-card">
+        <h3>Projet 1 – SAE 501 : Infrastructure TP Conteneurisée</h3>
+        <p><strong>SAE 501 – Mise en place d’une infrastructure de TP basée sur des conteneurs.</strong><br><br>
 L’objectif du projet était de créer une plateforme permettant de déployer automatiquement des environnements de Travaux Pratiques accessibles via un navigateur web. Nous avons conçu une infrastructure complète utilisant Docker, Flask, MySQL et une interface en noVNC pour permettre aux étudiants de créer, démarrer, arrêter ou supprimer leurs machines virtuelles.<br><br>
 <strong>Ce que j’ai réalisé :</strong>
 <ul>
@@ -72,39 +75,41 @@ L’objectif du projet était de créer une plateforme permettant de déployer a
 <img src="users_gestion.png" alt="Gestion utilisateurs" style="width:100%;border-radius:10px;margin:10px 0;">
 <img src="mach_gestion.png" alt="Gestion machines conteneurs" style="width:100%;border-radius:10px;margin:10px 0;">
 <br>
-(Remplace les images par de vraies captures d'écran en ajoutant l’URL ou ton propre fichier.)</p>
-      <a class="btn-download" href="Rapport-SAE501-Czurka-Negrila-Bauchart-Duval.pdf" download>Télécharger le rapport</a>
+</p>
+        <a class="btn-download" href="Rapport-SAE501-Czurka-Negrila-Bauchart-Duval.pdf" download>Télécharger le rapport</a>
+      </div>
+      <div class="project-card">
+        <h3>Projet 2 – À compléter</h3>
+        <p>Description du projet…</p>
+        <a class="btn-download" href="#">Télécharger le rapport</a>
+      </div>
+      <div class="project-card">
+        <h3>Projet 3 – À compléter</h3>
+        <p>Description du projet…</p>
+        <a class="btn-download" href="#">Télécharger le rapport</a>
+      </div>
     </div>
-    <div class="project-card">
-      <h3>Projet 2 – À compléter</h3>
-      <p>Description du projet…</p>
-      <a class="btn-download" href="#">Télécharger le rapport</a>
-    </div>
-    <div class="project-card">
-      <h3>Projet 3 – À compléter</h3>
-      <p>Description du projet…</p>
-      <a class="btn-download" href="#">Télécharger le rapport</a>
-    </div>
-  </div>
 
-  <!-- SEMESTRE 2 -->
-  <div id="s2" class="semestre">
-    <div class="project-card">
-      <h3>Projet 1 – À compléter</h3>
-      <p>Description du projet…</p>
-      <a class="btn-download" href="#">Télécharger le rapport</a>
-    </div>
-    <div class="project-card">
-      <h3>Projet 2 – À compléter</h3>
-      <p>Description du projet…</p>
-      <a class="btn-download" href="#">Télécharger le rapport</a>
-    </div>
-    <div class="project-card">
-      <h3>Projet 3 – À compléter</h3>
-      <p>Description du projet…</p>
-      <a class="btn-download" href="#">Télécharger le rapport</a>
+    <!-- SEMESTRE 2 -->
+    <div id="s2" class="semestre">
+      <div class="project-card">
+        <h3>Projet 1 – À compléter</h3>
+        <p>Description du projet…</p>
+        <a class="btn-download" href="#">Télécharger le rapport</a>
+      </div>
+      <div class="project-card">
+        <h3>Projet 2 – À compléter</h3>
+        <p>Description du projet…</p>
+        <a class="btn-download" href="#">Télécharger le rapport</a>
+      </div>
+      <div class="project-card">
+        <h3>Projet 3 – À compléter</h3>
+        <p>Description du projet…</p>
+        <a class="btn-download" href="#">Télécharger le rapport</a>
+      </div>
     </div>
   </div>
+</div>
 
 <!-- SECTION TRAVAIL EN ENTREPRISE -->
 <div id="entreprise" style="display:none; max-width:900px; margin:30px auto; padding:20px;">
@@ -145,24 +150,25 @@ L’objectif du projet était de créer une plateforme permettant de déployer a
 
 <script>
 function showTab(id, el){
-  document.querySelectorAll('.semestre').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.semestre').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
 }
-function showMain(section){
-  const saeTabs=document.getElementById('tabs-sae');
-  const saeContent=document.getElementById('content-sae');
-  const entreprise=document.getElementById('entreprise');
 
-  if(section==='sae'){
-    saeTabs.style.display='flex';
-    saeContent.style.display='block';
-    entreprise.style.display='none';
+function showMain(section){
+  const saeTabs = document.getElementById('tabs-sae');
+  const saeContent = document.getElementById('content-sae');
+  const entreprise = document.getElementById('entreprise');
+
+  if(section === 'sae'){
+    saeTabs.style.display = 'flex';
+    saeContent.style.display = 'block';
+    entreprise.style.display = 'none';
   } else {
-    saeTabs.style.display='none';
-    document.querySelectorAll('.semestre').forEach(e=>e.style.display='none');
-    entreprise.style.display='block';
+    saeTabs.style.display = 'none';
+    saeContent.style.display = 'none';
+    entreprise.style.display = 'block';
   }
 }
 </script>
