@@ -31,7 +31,12 @@
   <button onclick="window.location.href='index.html'" style="padding:10px 20px; background:#3ec5ff; color:#04263b; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Retour à l'accueil</button>
 </div>
 
-<div class="tabs">
+<div style="text-align:center; margin-top:20px; display:flex; gap:20px; justify-content:center;">
+  <button onclick="showMain('sae')" style="padding:10px 20px; background:#3ec5ff; color:#04263b; border:none; border-radius:10px; font-weight:700; cursor:pointer;">SAE</button>
+  <button onclick="showMain('entreprise')" style="padding:10px 20px; background:#3ec5ff; color:#04263b; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Travail en entreprise</button>
+</div>
+
+<div class="tabs" id="tabs-sae">
   <div class="tab active" onclick="showTab('s1', this)">Semestre 1</div>
   <div class="tab" onclick="showTab('s2', this)">Semestre 2</div>
 </div>
@@ -63,15 +68,16 @@ L’objectif du projet était de créer une plateforme permettant de déployer a
 <br>
 <strong>Captures d’écran :</strong>
 <br>
-<img src="page_connexion.png" alt="Capture interface connexion" style="width:70%;border-radius:10px;margin:10px 0;"> 
-<img src="users_gestion.png" alt="Gestion utilisateurs" style="width:100%;border-radius:10px;margin:10px 0;"> 
+<img src="page_connexion.png" alt="Capture interface connexion" style="width:100%;border-radius:10px;margin:10px 0;">
+<img src="users_gestion.png" alt="Gestion utilisateurs" style="width:100%;border-radius:10px;margin:10px 0;">
 <img src="mach_gestion.png" alt="Gestion machines conteneurs" style="width:100%;border-radius:10px;margin:10px 0;">
 <br>
+(Remplace les images par de vraies captures d'écran en ajoutant l’URL ou ton propre fichier.)</p>
       <a class="btn-download" href="Rapport-SAE501-Czurka-Negrila-Bauchart-Duval.pdf" download>Télécharger le rapport</a>
     </div>
     <div class="project-card">
-      <h3>Projet 2 – R5 ROM.09 & Saé 5 ROM.03 - Déployer et gérer les services ROM</h3>
-      <p>R5 ROM.09 & Saé 5 ROM.03 - Déployer et gérer les services ROM</p>
+      <h3>Projet 2 – À compléter</h3>
+      <p>Description du projet…</p>
       <a class="btn-download" href="#">Télécharger le rapport</a>
     </div>
     <div class="project-card">
@@ -99,6 +105,42 @@ L’objectif du projet était de créer une plateforme permettant de déployer a
       <a class="btn-download" href="#">Télécharger le rapport</a>
     </div>
   </div>
+
+<!-- SECTION TRAVAIL EN ENTREPRISE -->
+<div id="entreprise" style="display:none; max-width:900px; margin:30px auto; padding:20px;">
+  <div class="project-card">
+    <h3>Travail en entreprise – IT2i</h3>
+    <p>
+      <strong>Semaine du 20 au 24 octobre :</strong><br>
+      - Intervention chez un client pour maintenance des postes (MAJ).<br>
+      - Observation des rubriques des pare-feu ZyXEL.<br>
+      - Connexion fibre sur pare-feu + installation borne 4G.<br>
+      - Installation de 6 postes : récupération données, partages réseaux, imprimantes.<br>
+      - Appels hotline : activation licences Windows, tests scanner réseau.<br>
+      - Tests stations d’accueil.<br><br>
+
+      <strong>Semaine du 27 au 31 octobre :</strong><br>
+      - Création d’un script automatique de rapport de sauvegarde (Java / Google Script).<br>
+      - Installation serveur physique + ajout disque dur NAS pour sauvegardes.<br>
+      - Prise d’appels : installation TSE, prises en main à distance.<br>
+      - Installation imprimante à distance.<br>
+      - Vérification journalière des sauvegardes.<br><br>
+
+      <strong>Semaine du 3 au 10 novembre :</strong><br>
+      - Modification renvois d’appels sur téléphonie.<br>
+      - Connexion serveur de fichiers.<br>
+      - Gestion des droits Windows pour scripts.<br>
+      - Connexion VPN pour accès serveur distant.<br>
+      - Synchronisation de drive.<br><br>
+
+      <strong>Semaine du 10 au 14 novembre :</strong><br>
+      - Désactivation alarme onduleur à distance.<br>
+      - Connexion VPN pour accès serveur.<br>
+      - Création comptes AD et VPN.<br>
+      - Résolution bug tablette liée à AD + VPN.<br>
+      - Support téléphonique (disque dur vide, clavier mal branché, fibre).<br>
+    </p>
+  </div>
 </div>
 
 <script>
@@ -108,8 +150,22 @@ function showTab(id, el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
 }
+function showMain(section){
+  const saeTabs=document.getElementById('tabs-sae');
+  const saeContent=document.getElementById('content-sae');
+  const entreprise=document.getElementById('entreprise');
+
+  if(section==='sae'){
+    saeTabs.style.display='flex';
+    saeContent.style.display='block';
+    entreprise.style.display='none';
+  } else {
+    saeTabs.style.display='none';
+    document.querySelectorAll('.semestre').forEach(e=>e.style.display='none');
+    entreprise.style.display='block';
+  }
+}
 </script>
 
 </body>
 </html>
-
