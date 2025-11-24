@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio – Baptiste Duval</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap">
+<style>
+  body { margin:0; font-family:Inter, sans-serif; background:#0f172a; color:#e8f0ff; }
+  header { padding:20px; text-align:center; font-size:28px; font-weight:700; color:#3ec5ff; }
+
+  .tabs { display:flex; justify-content:center; margin-top:20px; }
+  .tab { padding:12px 24px; cursor:pointer; border-bottom:3px solid transparent; font-weight:600; color:#94a3b8; }
+  .tab.active { color:#3ec5ff; border-color:#3ec5ff; }
+
+  .content { max-width:900px; margin:30px auto; padding:20px; }
+  .semestre { display:none; }
+  .semestre.active { display:block; }
+
+  .project-card { background:rgba(255,255,255,0.05); padding:20px; border-radius:14px; margin-bottom:20px; }
+  .project-card h3 { margin:0 0 10px; color:#3ec5ff; }
+  .project-card p { color:#cbd5e1; }
+  .btn-download { margin-top:10px; display:inline-block; padding:10px 16px; background:#3ec5ff; color:#04263b; border-radius:10px; font-weight:700; text-decoration:none; }
+</style>
+</head>
+
+<body>
+<header>Portfolio – Baptiste Duval</header>
+<div style="text-align:center; margin-top:10px;">
+  <button onclick="window.location.href='index.html'" style="padding:10px 20px; background:#3ec5ff; color:#04263b; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Retour à l'accueil</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('s1', this)">Semestre 1</div>
+  <div class="tab" onclick="showTab('s2', this)">Semestre 2</div>
+</div>
+
+<div class="content">
+  <!-- SEMESTRE 1 -->
+  <div id="s1" class="semestre active">
+    <div class="project-card">
+      <h3>Projet 1 – SAE 501 : Infrastructure TP Conteneurisée</h3>
+      <p><strong>SAE 501 – Mise en place d’une infrastructure de TP basée sur des conteneurs.</strong><br><br>
+L’objectif du projet était de créer une plateforme permettant de déployer automatiquement des environnements de Travaux Pratiques accessibles via un navigateur web. Nous avons conçu une infrastructure complète utilisant Docker, Flask, MySQL et une interface en noVNC pour permettre aux étudiants de créer, démarrer, arrêter ou supprimer leurs machines virtuelles.<br><br>
+<strong>Ce que j’ai réalisé :</strong>
+<ul>
+  <li>Mise en place d’un orchestrateur de conteneurs pour gérer plusieurs environnements.</li>
+  <li>Création d’images de conteneurs (Ubuntu, Kali Linux, Windows).</li>
+  <li>Développement d’une interface web en Flask + HTML/CSS/JS.</li>
+  <li>Système d’authentification sécurisé (mots de passe hachés, rôles admin/user).</li>
+  <li>Gestion dynamique des conteneurs Docker (création, démarrage, suppression).</li>
+  <li>Monitoring via logs utilisateur et supervision complète avec Portainer.</li>
+</ul>
+<br>
+<strong>Fonctionnalités techniques :</strong>
+<ul>
+  <li>Déploiement instantané de machines virtuelles via Docker.</li>
+  <li>Accès au bureau via navigateur grâce à noVNC.</li>
+  <li>Isolation complète des conteneurs.</li>
+  <li>Supervision système : CPU, RAM, nombre de conteneurs.</li>
+</ul>
+<br>
+<strong>Captures d’écran :</strong>
+<br>
+<img src="images/page_connexion.png" alt="Capture interface connexion" style="width:70%;border-radius:10px;margin:10px 0;"> 
+<img src="images/users_gestion.png" alt="Gestion utilisateurs" style="width:100%;border-radius:10px;margin:10px 0;"> 
+<img src="images/mach_gestion.png" alt="Gestion machines conteneurs" style="width:100%;border-radius:10px;margin:10px 0;">
+<br>
+      <a class="btn-download" href="telecharger/Rapport-SAE501-Czurka-Negrila-Bauchart-Duval.pdf" download>Télécharger le rapport</a>
+    </div>
+    <div class="project-card">
+      <h3>Projet 2 – R5 ROM.09 & Saé 5 ROM.03 - Déployer et gérer les services ROM</h3>
+      <p>R5 ROM.09 & Saé 5 ROM.03 - Déployer et gérer les services ROM</p>
+      <a class="btn-download" href="#">Télécharger le rapport</a>
+    </div>
+    <div class="project-card">
+      <h3>Projet 3 – À compléter</h3>
+      <p>Description du projet…</p>
+      <a class="btn-download" href="#">Télécharger le rapport</a>
+    </div>
+  </div>
+
+  <!-- SEMESTRE 2 -->
+  <div id="s2" class="semestre">
+    <div class="project-card">
+      <h3>Projet 1 – À compléter</h3>
+      <p>Description du projet…</p>
+      <a class="btn-download" href="#">Télécharger le rapport</a>
+    </div>
+    <div class="project-card">
+      <h3>Projet 2 – À compléter</h3>
+      <p>Description du projet…</p>
+      <a class="btn-download" href="#">Télécharger le rapport</a>
+    </div>
+    <div class="project-card">
+      <h3>Projet 3 – À compléter</h3>
+      <p>Description du projet…</p>
+      <a class="btn-download" href="#">Télécharger le rapport</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(id, el){
+  document.querySelectorAll('.semestre').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+
+</body>
+</html>
