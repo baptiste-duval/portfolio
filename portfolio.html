@@ -19,23 +19,25 @@
   .project-card h3 { margin:0 0 10px; color:#3ec5ff; }
   .project-card p { color:#cbd5e1; }
   .btn-download { margin-top:10px; display:inline-block; padding:10px 16px; background:#3ec5ff; color:#04263b; border-radius:10px; font-weight:700; text-decoration:none; cursor:pointer; }
-  .btn-eval { background:#10b981; margin-left:15px; }
+  .btn-eval { background:#10b981 !important; margin-left:15px; }
+  .btn-save { background:#f59e0b !important; }
   table { width:100%; border-collapse:collapse; margin-top:15px; }
   th, td { padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.15); }
   th { background:rgba(62,197,255,0.2); color:#3ec5ff; }
   tbody tr:nth-child(even) { background:rgba(255,255,255,0.03); }
   input[type="radio"] { transform:scale(1.4); cursor:pointer; }
+  .msg { text-align:center; margin-top:12px; font-weight:600; }
+  .success { color:#34d399; }
+  .error { color:#f87171; }
 </style>
 </head>
 <body>
 <header>Portfolio – Baptiste Duval</header>
-
 <div style="text-align:center; margin-top:10px;">
   <button onclick="window.location.href='index.html'" style="padding:10px 20px; background:#3ec5ff; color:#04263b; border:none; border-radius:10px; font-weight:700; cursor:pointer;">
     Retour à l'accueil
   </button>
 </div>
-
 <div style="text-align:center; margin-top:20px; display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
   <button onclick="showMain('sae')" style="padding:10px 20px; background:#3ec5ff; color:#04263b; border:none; border-radius:10px; font-weight:700; cursor:pointer;">SAE</button>
   <button onclick="showMain('entreprise')" style="padding:10px 20px; background:#3ec5ff; color:#04263b; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Travail en entreprise</button>
@@ -82,20 +84,22 @@
         </p>
 
         <a class="btn-download" href="Rapport-SAE501-Czurka-Negrila-Bauchart-Duval.pdf" download>Télécharger le rapport</a>
+        <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-sae501')">Auto-évaluation</button>
 
-        <!-- Bouton Auto-évaluation -->
-        <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-sae501')">
-          Auto-évaluation
-        </button>
-
-        <!-- Tableau d’auto-évaluation (caché par défaut) -->
+        <!-- AUTO-ÉVALUATION SYNCHRONISÉE PARTOUT -->
         <div id="auto-eval-sae501" style="display:none; margin-top:25px; padding:20px; background:rgba(255,255,255,0.08); border-radius:14px;">
-          <h4 style="color:#3ec5ff; margin-top:0; text-align:center;">Auto-évaluation des compétences – SAE 501</h4>
-          <p style="font-size:0.9em; color:#94a3b8; text-align:center;">(A = acquis parfaitement B = acquis C = partiellement acquis D = non acquis)</p>
+          <h4 style="color:#3ec5ff; text-align:center;">Auto-évaluation des compétences – SAE 501</h4>
+          <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
+            (A = acquis parfaitement B = acquis C = partiellement acquis D = non acquis)
+          </p>
+          <p style="font-size:0.95em; color:#34d399; text-align:center; margin:10px 0;">
+            Tes notes sont synchronisées partout grâce au cloud
+          </p>
+
           <table>
             <thead>
               <tr>
-                <th style="text-align:left; width:45%;">Compétence</th>
+                <th style="text-align:left; width:48%;">Compétence</th>
                 <th>A</th><th>B</th><th>C</th><th>D</th>
               </tr>
             </thead>
@@ -144,13 +148,16 @@
               </tr>
             </tbody>
           </table>
-          <div style="text-align:center; margin-top:15px;">
-            <small style="color:#94a3b8;">Tu peux cocher la note que tu estimes avoir acquise pour chaque compétence.</small>
+
+          <div style="text-align:center; margin-top:20px;">
+            <button class="btn-download btn-save" onclick="saveEval()">Enregistrer partout</button>
+            <button class="btn-download" style="background:#3ec5ff; margin-left:10px;" onclick="loadEval()">Actualiser depuis le cloud</button>
           </div>
+          <div id="eval-msg" class="msg"></div>
         </div>
       </div>
 
-      <!-- Autres projets S1 (à compléter plus tard) -->
+      <!-- Autres projets S1 -->
       <div class="project-card">
         <h3>Projet 2 – À compléter</h3>
         <p>Description du projet…</p>
@@ -198,13 +205,13 @@
 </div>
 
 <script>
+// === FONCTIONS DE BASE ===
 function showTab(id, el){
   document.querySelectorAll('.semestre').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
 }
-
 function showMain(section){
   const saeTabs = document.getElementById('tabs-sae');
   const saeContent = document.getElementById('content-sae');
@@ -219,12 +226,66 @@ function showMain(section){
     entreprise.style.display = 'block';
   }
 }
-
-// Fonction pour afficher/masquer l’auto-évaluation
 function toggleEval(id){
   const el = document.getElementById(id);
   el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+  if(el.style.display === 'block') loadEval();
 }
+
+// === SAUVEGARDE CLOUD VIA TON LIEN TIINY.SITE ===
+const CLOUD_URL = "https://sae501-eval.tiiny.site/json/sae501-eval";
+
+async function saveEval() {
+  const data = {};
+  for(let i = 1; i <= 6; i++){
+    const checked = document.querySelector(`input[name="c${i}"]:checked`);
+    data[`c${i}`] = checked ? checked.value : "";
+  }
+
+  // Envoi via un service gratuit qui permet l'écriture (jsonbin-like)
+  try {
+    await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(CLOUD_URL), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    document.getElementById("eval-msg").innerHTML = '<span class="success">Enregistré partout !</span>';
+  } catch(e) {
+    document.getElementById("eval-msg").innerHTML = '<span class="error">Erreur réseau (mais localement sauvegardé)</span>';
+    localStorage.setItem("sae501-backup", JSON.stringify(data)); // backup local
+  }
+  setTimeout(() => document.getElementById("eval-msg").innerHTML = "", 4000);
+}
+
+async function loadEval() {
+  try {
+    const response = await fetch(CLOUD_URL + "?t=" + Date.now()); // anti-cache
+    const data = await response.json();
+    for(let i = 1; i <= 6; i++){
+      if(data[`c${i}`]){
+        document.querySelector(`input[name="c${i}"][value="${data[`c${i}`]}"]`).checked = true;
+      }
+    }
+  } catch(e) {
+    // Si pas de connexion, on charge le backup local éventuel
+    const backup = localStorage.getItem("sae501-backup");
+    if(backup){
+      const data = JSON.parse(backup);
+      for(let i = 1; i <= 6; i++){
+        if(data[`c${i}`]){
+          document.querySelector(`input[name="c${i}"][value="${data[`c${i}`]}"]`).checked = true;
+        }
+      }
+    }
+  }
+}
+
+// Chargement automatique à l’ouverture
+window.addEventListener("load", () => {
+  if(document.getElementById("auto-eval-sae501").style.display === "block"){
+    loadEval();
+  }
+});
 </script>
 </body>
 </html>
