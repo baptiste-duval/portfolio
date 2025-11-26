@@ -189,15 +189,15 @@
   <div class="project-card">
       <h3>Projet 1 – Rapport automatique de sauvegardes quotidiennes</h3>
       <p>
-        <strong>Contexte :</strong> L’entreprise IT2i effectuait manuellement chaque matin la vérification des sauvegardes Veeam/Nakivo de plusieurs dizaines de clients. Cela prenait beaucoup de temps et était source d’erreurs.<br><br>
+        <strong>Contexte :</strong> L’entreprise IT2i effectuait manuellement chaque matin la vérification des sauvegardes. Cela prenait beaucoup de temps et était source d’erreurs.<br><br>
 
         <strong>Mission confiée :</strong> Automatiser entièrement la génération et l’envoi d’un rapport PDF clair chaque jour.<br><br>
 
         <strong>Réalisation (octobre-novembre 2025) :</strong>
         <ul>
-          <li>Création d’un script Java qui se connecte en SSH aux différents serveurs de sauvegarde.</li>
+          <li>Création d’un script Java qui récupere dans les mails de sauvegarde reçu leurs status.</li>
           <li>Récupération des logs et statuts des jobs de sauvegarde de la veille.</li>
-          <li>Génération automatique d’un rapport PDF esthétique (avec iText 7) contenant :
+          <li>Génération automatique d’un rapport PDF esthétique contenant :
             <ul>
               <li>Statut global (succès / échec / avertissement)</li>
               <li>Liste détaillée des clients avec date, taille sauvegardée, durée</li>
@@ -205,7 +205,6 @@
             </ul>
           </li>
           <li>Envoi automatique par e-mail via Gmail API avec Google Apps Script (pour contourner les restrictions SMTP classiques).</li>
-          <li>Planification quotidienne via cron (Linux) + tâche planifiée Windows.</li>
         </ul>
         <br>
         <strong>Résultat :</strong><br>
@@ -354,6 +353,7 @@ async function saveEval(sae) {
 </script>
 </body>
 </html>
+
 
 
 
