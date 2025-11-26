@@ -89,22 +89,73 @@
           <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
             A = acquis parfaitement B = acquis C = partiellement acquis D = non acquis
           </p>
+          <!-- Tableau d’auto-évaluation -->
+        <div id="auto-eval-sae501" style="display:none; margin-top:25px; padding:20px; background:rgba(255,255,255,0.08); border-radius:14px;">
+          <h4 style="color:#3ec5ff; margin-top:0; text-align:center;">Auto-évaluation des compétences – SAE 501</h4>
+          <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
+            (A = acquis parfaitement B = acquis C = partiellement acquis D = non acquis)
+          </p>
+
           <table>
             <thead>
               <tr>
-                <th style="text-align:left; width:50%;">Compétence</th>
+                <th style="text-align:left; width:45%;">Compétence</th>
                 <th>A</th><th>B</th><th>C</th><th>D</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td style="text-align:left;">Administrer les réseaux et l’internet</td><td><input type="radio" name="c1" value="A"></td><td><input type="radio" name="c1" value="B"></td><td><input type="radio" name="c1" value="C"></td><td><input type="radio" name="c1" value="D"></td></tr>
-              <tr><td style="text-align:left;">Connecter les entreprises et les usagers</td><td><input type="radio" name="c2" value="A"></td><td><input type="radio" name="c2" value="B"></td><td><input type="radio" name="c2" value="C"></td><td><input type="radio" name="c2" value="D"></td></tr>
-              <tr><td style="text-align:left;">Programmer</td><td><input type="radio" name="c3" value="A"></td><td><input type="radio" name="c3" value="B"></td><td><input type="radio" name="c3" value="C"></td><td><input type="radio" name="c3" value="D"></td></tr>
-              <tr><td style="text-align:left;">Gérer des bases de données</td><td><input type="radio" name="c4" value="A"></td><td><input type="radio" name="c4" value="B"></td><td><input type="radio" name="c4" value="C"></td><td><input type="radio" name="c4" value="D"></td></tr>
-              <tr><td style="text-align:left;">Travailler en mode projet</td><td><input type="radio" name="c5" value="A"></td><td><input type="radio" name="c5" value="B"></td><td><input type="radio" name="c5" value="C"></td><td><input type="radio" name="c5" value="D"></td></tr>
-              <tr><td style="text-align:left;">Sécurité informatique</td><td><input type="radio" name="c6" value="A"></td><td><input type="radio" name="c6" value="B"></td><td><input type="radio" name="c6" value="C"></td><td><input type="radio" name="c6" value="D"></td></tr>
+              <tr>
+                <td style="text-align:left;">Administrer les réseaux et l’internet</td>
+                <td><input type="radio" name="c1" value="A"></td>
+                <td><input type="radio" name="c1" value="B"></td>
+                <td><input type="radio" name="c1" value="C"></td>
+                <td><input type="radio" name="c1" value="D"></td>
+              </tr>
+              <tr>
+                <td style="text-align:left;">Connecter les entreprises et les usagers</td>
+                <td><input type="radio" name="c2" value="A"></td>
+                <td><input type="radio" name="c2" value="B"></td>
+                <td><input type="radio" name="c2" value="C"></td>
+                <td><input type="radio" name="c2" value="D"></td>
+              </tr>
+              <tr>
+                <td style="text-align:left;">Programmer</td>
+                <td><input type="radio" name="c3" value="A"></td>
+                <td><input type="radio" name="c3" value="B"></td>
+                <td><input type="radio" name="c3" value="C"></td>
+                <td><input type="radio" name="c3" value="D"></td>
+              </tr>
+              <tr>
+                <td style="text-align:left;">Gérer des bases de données</td>
+                <td><input type="radio" name="c4" value="A"></td>
+                <td><input type="radio" name="c4" value="B"></td>
+                <td><input type="radio" name="c4" value="C"></td>
+                <td><input type="radio" name="c4" value="D"></td>
+              </tr>
+              <tr>
+                <td style="text-align:left;">Travailler en mode projet</td>
+                <td><input type="radio" name="c5" value="A"></td>
+                <td><input type="radio" name="c5" value="B"></td>
+                <td><input type="radio" name="c5" value="C"></td>
+                <td><input type="radio" name="c5" value="D"></td>
+              </tr>
+              <tr>
+                <td style="text-align:left;">Sécurité informatique</td>
+                <td><input type="radio" name="c6" value="A"></td>
+                <td><input type="radio" name="c6" value="B"></td>
+                <td><input type="radio" name="c6" value="C"></td>
+                <td><input type="radio" name="c6" value="D"></td>
+              </tr>
             </tbody>
           </table>
+
+          <div style="text-align:center; margin-top:20px;">
+            <button class="btn-download btn-save" onclick="saveEval()">Enregistrer mon auto-évaluation</button>
+            <button class="btn-download" style="background:#ef4444; margin-left:10px;" onclick="clearEval()">Effacer</button>
+          </div>
+          <div id="saved-msg" class="saved-msg" style="text-align:center;">Auto-évaluation enregistrée !</div>
+        </div>
+      </div>
 
           <div style="text-align:center; margin-top:20px;">
             <button class="btn-download btn-save" onclick="saveEval()">Copier pour GitHub</button>
@@ -227,4 +278,5 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
 
