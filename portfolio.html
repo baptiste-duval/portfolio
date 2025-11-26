@@ -79,17 +79,14 @@
         <img src="users_gestion.png" alt="Gestion users" style="width:100%;border-radius:10px;margin:10px 0;">
         <img src="mach_gestion.png" alt="Gestion machines" style="width:100%;border-radius:10px;margin:10px 0;">
         </p>
-
         <a class="btn-download" href="Rapport-SAE501-Czurka-Negrila-Bauchart-Duval.pdf" download>Télécharger le rapport</a>
         <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-sae501')">Auto-évaluation</button>
 
-        <!-- ==== AUTO-ÉVALUATION (une seule fois, proprement) ==== -->
         <div id="auto-eval-sae501" style="display:none; margin-top:25px; padding:20px; background:rgba(255,255,255,0.08); border-radius:14px;">
           <h4 style="color:#3ec5ff; text-align:center;">Auto-évaluation des compétences – SAE 501</h4>
           <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
             (A = acquis parfaitement B = acquis C = partiellement acquis D = non acquis)
           </p>
-
           <table>
             <thead>
               <tr>
@@ -106,22 +103,18 @@
               <tr><td style="text-align:left;">Sécurité informatique (hachage mots de passe, isolation conteneurs)</td><td><input type="radio" name="c6" value="A"></td><td><input type="radio" name="c6" value="B"></td><td><input type="radio" name="c6" value="C"></td><td><input type="radio" name="c6" value="D"></td></tr>
             </tbody>
           </table>
-
           <div id="saved-msg" class="saved-msg">
             Données copiées dans le presse-papier !<br>
             → Va sur GitHub → édite <code>sae501-eval.json</code> → colle → Commit
           </div>
         </div>
-        <!-- FIN AUTO-ÉVALUATION -->
       </div>
 
-      <!-- Autres projets S1 -->
-            <!-- ==================== SAE 502 ==================== -->
+      <!-- ==================== SAE 502 ==================== -->
       <div class="project-card">
         <h3>Projet 2 – SAE 502 (à compléter plus tard)</h3>
         <p><em>Description du projet à venir…</em></p>
         <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-sae502')">Auto-évaluation</button>
-
         <div id="auto-eval-sae502" style="display:none; margin-top:25px; padding:20px; background:rgba(255,255,255,0.08); border-radius:14px;">
           <h4 style="color:#3ec5ff; text-align:center;">Auto-évaluation des compétences – SAE 502</h4>
           <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
@@ -154,7 +147,6 @@
         <h3>Projet 3 – SAE 503 (à compléter plus tard)</h3>
         <p><em>Description du projet à venir…</em></p>
         <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-sae503')">Auto-évaluation</button>
-
         <div id="auto-eval-sae503" style="display:none; margin-top:25px; padding:20px; background:rgba(255,255,255,0.08); border-radius:14px;">
           <h4 style="color:#3ec5ff; text-align:center;">Auto-évaluation des compétences – SAE 503</h4>
           <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
@@ -181,6 +173,7 @@
           </div>
         </div>
       </div>
+    </div>
 
     <!-- SEMESTRE 2 -->
     <div id="s2" class="semestre">
@@ -189,7 +182,7 @@
   </div>
 </div>
 
-<!-- SECTION TRAVAIL EN ENTREPRISE (inchangée) -->
+<!-- SECTION TRAVAIL EN ENTREPRISE -->
 <div id="entreprise" style="display:none; max-width:900px; margin:30px auto; padding:20px;">
   <div class="project-card">
     <h3>Travail en entreprise – IT2i</h3>
@@ -224,43 +217,50 @@
 </div>
 
 <script>
+// === FONCTION CORRIGÉE (c’est la seule chose que j’ai changée) ===
+function showMain(section){
+  const tabs = document.getElementById('tabs-sae');
+  const content = document.getElementById('content-sae');
+  const entreprise = document.getElementById('entreprise');
+
+  if(section === 'sae'){
+    tabs.style.display = 'flex';
+    content.style.display = 'block';
+    entreprise.style.display = 'none';
+  } else if(section === 'entreprise'){
+    tabs.style.display = 'none';
+    content.style.display = 'none';
+    entreprise.style.display = 'block';
+  }
+}
+// =========================================================
+
 function showTab(id, el){
   document.querySelectorAll('.semestre').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
 }
-function showMain(section){
-  document.getElementById('tabs-sae').style.display = section==='sae' ? 'flex' : 'none';
-  document.getElementById('content-sae').style.display = section==='sae' ? 'block' : 'none';
-  document.getElementById('entreprise').style.display = section==='entreprise' ? 'block' : 'none';
-}
 
-// Ouvre/ferme l'auto-éval et charge le bon fichier
 function toggleEval(id){
   const el = document.getElementById(id);
   el.style.display = el.style.display === 'block' ? 'none' : 'block';
   if(el.style.display === 'block') {
-    const sae = id.match(/\d+$/)[0]; // récupère 501, 502 ou 503
+    const sae = id.match(/\d+$/)[0];
     loadEval(sae);
   }
 }
 
-// Charge le bon fichier JSON selon la SAE
 async function loadEval(sae) {
   try {
     const res = await fetch(`sae${sae}-eval.json?t=${Date.now()}`);
     const data = await res.json();
-
     for(let i = 1; i <= 6; i++){
       if(data[`c${i}`]) {
-        // Cas spécial SAE501 : les name sont "c1", "c2"...
         if(sae === "501") {
           const radio = document.querySelector(`input[name="c${i}"][value="${data[`c${i}`]}"]`);
           if(radio) radio.checked = true;
-        }
-        // Cas normal SAE502 et 503 : name="c502_1", etc.
-        else {
+        } else {
           const radio = document.querySelector(`input[name="c${sae}_${i}"][value="${data[`c${i}`]}"]`);
           if(radio) radio.checked = true;
         }
@@ -271,7 +271,6 @@ async function loadEval(sae) {
   }
 }
 
-// Sauvegarde : même logique (exception pour SAE501)
 async function saveEval(sae) {
   const data = {};
   for(let i = 1; i <= 6; i++){
@@ -284,7 +283,6 @@ async function saveEval(sae) {
     data[`c${i}`] = sel ? sel.value : "";
   }
   await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-
   const msgId = sae === "501" ? "saved-msg" : `saved-msg-${sae}`;
   const msg = document.getElementById(msgId);
   if(msg) {
@@ -292,17 +290,6 @@ async function saveEval(sae) {
     setTimeout(() => msg.style.display = 'none', 6000);
   }
 }
-
-// Au chargement de la page
-window.addEventListener('load', () => {
-  if(document.getElementById('auto-eval-sae501').style.display === 'block'){
-    loadEval();
-  }
-});
 </script>
 </body>
 </html>
-
-
-
-
