@@ -52,8 +52,6 @@
   <div class="content">
     <!-- SEMESTRE 1 -->
     <div id="s1" class="semestre active">
-
-      <!-- SAE 501 -->
       <div class="project-card">
         <h3>Projet 1 – SAE 501 : Infrastructure TP Conteneurisée</h3>
         <p><strong>SAE 501 – Mise en place d’une infrastructure de TP basée sur des conteneurs.</strong><br><br>
@@ -67,21 +65,38 @@
           <li>Gestion dynamique des conteneurs Docker (création, démarrage, suppression).</li>
           <li>Monitoring via logs utilisateur et supervision complète avec Portainer.</li>
         </ul>
-        <br><strong>Captures d’écran :</strong><br>
+        <br>
+        <strong>Fonctionnalités techniques :</strong>
+        <ul>
+          <li>Déploiement instantané de machines virtuelles via Docker.</li>
+          <li>Accès au bureau via navigateur grâce à noVNC.</li>
+          <li>Isolation complète des conteneurs.</li>
+          <li>Supervision système : CPU, RAM, nombre de conteneurs.</li>
+        </ul>
+        <br>
+        <strong>Captures d’écran :</strong><br>
         <img src="page_connexion.png" alt="Connexion" style="width:100%;border-radius:10px;margin:10px 0;">
         <img src="users_gestion.png" alt="Gestion users" style="width:100%;border-radius:10px;margin:10px 0;">
         <img src="mach_gestion.png" alt="Gestion machines" style="width:100%;border-radius:10px;margin:10px 0;">
         </p>
+
         <a class="btn-download" href="Rapport-SAE501-Czurka-Negrila-Bauchart-Duval.pdf" download>Télécharger le rapport</a>
         <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-sae501')">Auto-évaluation</button>
 
+        <!-- ==== AUTO-ÉVALUATION (une seule fois, proprement) ==== -->
         <div id="auto-eval-sae501" style="display:none; margin-top:25px; padding:20px; background:rgba(255,255,255,0.08); border-radius:14px;">
           <h4 style="color:#3ec5ff; text-align:center;">Auto-évaluation des compétences – SAE 501</h4>
           <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
             (A = acquis parfaitement B = acquis C = partiellement acquis D = non acquis)
           </p>
+
           <table>
-            <thead><tr><th style="text-align:left; width:50%;">Compétence</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
+            <thead>
+              <tr>
+                <th style="text-align:left; width:50%;">Compétence</th>
+                <th>A</th><th>B</th><th>C</th><th>D</th>
+              </tr>
+            </thead>
             <tbody>
               <tr><td style="text-align:left;">Administrer les réseaux et l’internet (configuration Docker/network)</td><td><input type="radio" name="c1" value="A"></td><td><input type="radio" name="c1" value="B"></td><td><input type="radio" name="c1" value="C"></td><td><input type="radio" name="c1" value="D"></td></tr>
               <tr><td style="text-align:left;">Connecter les entreprises et les usagers (exposition de services via ports, noVNC)</td><td><input type="radio" name="c2" value="A"></td><td><input type="radio" name="c2" value="B"></td><td><input type="radio" name="c2" value="C"></td><td><input type="radio" name="c2" value="D"></td></tr>
@@ -91,93 +106,33 @@
               <tr><td style="text-align:left;">Sécurité informatique (hachage mots de passe, isolation conteneurs)</td><td><input type="radio" name="c6" value="A"></td><td><input type="radio" name="c6" value="B"></td><td><input type="radio" name="c6" value="C"></td><td><input type="radio" name="c6" value="D"></td></tr>
             </tbody>
           </table>
+
           <div style="text-align:center; margin-top:20px;">
-            <button class="btn-download btn-save" onclick="saveEval('501')">Copier pour GitHub</button>
-            <button class="btn-download" style="background:#ef4444; margin-left:10px;" onclick="clearEval('501')">Effacer</button>
+            <button class="btn-download btn-save" onclick="saveEval()">Copier pour GitHub</button>
+            <button class="btn-download" style="background:#ef4444; margin-left:10px;" onclick="clearEval()">Effacer</button>
           </div>
-          <div id="saved-msg-501" class="saved-msg">
-            SAE 501 → Copié ! Colle dans <code>sae501-eval.json</code>
+
+          <div id="saved-msg" class="saved-msg">
+            Données copiées dans le presse-papier !<br>
+            → Va sur GitHub → édite <code>sae501-eval.json</code> → colle → Commit
           </div>
         </div>
+        <!-- FIN AUTO-ÉVALUATION -->
       </div>
 
-      <!-- SAE 502 -->
-      <div class="project-card">
-        <h3>Projet 2 – SAE 502 (à compléter)</h3>
-        <p><em>Description du projet à venir…</em></p>
-        <a class="btn-download" href="#" download>Télécharger le rapport</a>
-        <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-sae502')">Auto-évaluation</button>
-
-        <div id="auto-eval-sae502" style="display:none; margin-top:25px; padding:20px; background:rgba(255,255,255,0.08); border-radius:14px;">
-          <h4 style="color:#3ec5ff; text-align:center;">Auto-évaluation des compétences – SAE 502</h4>
-          <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
-            (A = acquis parfaitement B = acquis C = partiellement acquis D = non acquis)
-          </p>
-          <table>
-            <thead><tr><th style="text-align:left; width:50%;">Compétence</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
-            <tbody>
-              <tr><td style="text-align:left;">Administrer les réseaux et l’internet</td><td><input type="radio" name="c502_1" value="A"></td><td><input type="radio" name="c502_1" value="B"></td><td><input type="radio" name="c502_1" value="C"></td><td><input type="radio" name="c502_1" value="D"></td></tr>
-              <tr><td style="text-align:left;">Connecter les entreprises et les usagers</td><td><input type="radio" name="c502_2" value="A"></td><td><input type="radio" name="c502_2" value="B"></td><td><input type="radio" name="c502_2" value="C"></td><td><input type="radio" name="c502_2" value="D"></td></tr>
-              <tr><td style="text-align:left;">Programmer</td><td><input type="radio" name="c502_3" value="A"></td><td><input type="radio" name="c502_3" value="B"></td><td><input type="radio" name="c502_3" value="C"></td><td><input type="radio" name="c502_3" value="D"></td></tr>
-              <tr><td style="text-align:left;">Gérer des bases de données</td><td><input type="radio" name="c502_4" value="A"></td><td><input type="radio" name="c502_4" value="B"></td><td><input type="radio" name="c502_4" value="C"></td><td><input type="radio" name="c502_4" value="D"></td></tr>
-              <tr><td style="text-align:left;">Travailler en mode projet</td><td><input type="radio" name="c502_5" value="A"></td><td><input type="radio" name="c502_5" value="B"></td><td><input type="radio" name="c502_5" value="C"></td><td><input type="radio" name="c502_5" value="D"></td></tr>
-              <tr><td style="text-align:left;">Sécurité informatique</td><td><input type="radio" name="c502_6" value="A"></td><td><input type="radio" name="c502_6" value="B"></td><td><input type="radio" name="c502_6" value="C"></td><td><input type="radio" name="c502_6" value="D"></td></tr>
-            </tbody>
-          </table>
-          <div style="text-align:center; margin-top:20px;">
-            <button class="btn-download btn-save" onclick="saveEval('502')">Copier pour GitHub</button>
-            <button class="btn-download" style="background:#ef4444; margin-left:10px;" onclick="clearEval('502')">Effacer</button>
-          </div>
-          <div id="saved-msg-502" class="saved-msg">
-            SAE 502 → Copié ! Colle dans <code>sae502-eval.json</code>
-          </div>
-        </div>
-      </div>
-
-      <!-- SAE 503 -->
-      <div class="project-card">
-        <h3>Projet 3 – SAE 503 (à compléter)</h3>
-        <p><em>Description du projet à venir…</em></p>
-        <a class="btn-download" href="#" download>Télécharger le rapport</a>
-        <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-sae503')">Auto-évaluation</button>
-
-        <div id="auto-eval-sae503" style="display:none; margin-top:25px; padding:20px; background:rgba(255,255,255,0.08); border-radius:14px;">
-          <h4 style="color:#3ec5ff; text-align:center;">Auto-évaluation des compétences – SAE 503</h4>
-          <p style="font-size:0.9em; color:#94a3b8; text-align:center;">
-            (A = acquis parfaitement B = acquis C = partiellement acquis D = non acquis)
-          </p>
-          <table>
-            <thead><tr><th style="text-align:left; width:50%;">Compétence</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
-            <tbody>
-              <tr><td style="text-align:left;">Administrer les réseaux et l’internet</td><td><input type="radio" name="c503_1" value="A"></td><td><input type="radio" name="c503_1" value="B"></td><td><input type="radio" name="c503_1" value="C"></td><td><input type="radio" name="c503_1" value="D"></td></tr>
-              <tr><td style="text-align:left;">Connecter les entreprises et les usagers</td><td><input type="radio" name="c503_2" value="A"></td><td><input type="radio" name="c503_2" value="B"></td><td><input type="radio" name="c503_2" value="C"></td><td><input type="radio" name="c503_2" value="D"></td></tr>
-              <tr><td style="text-align:left;">Programmer</td><td><input type="radio" name="c503_3" value="A"></td><td><input type="radio" name="c503_3" value="B"></td><td><input type="radio" name="c503_3" value="C"></td><td><input type="radio" name="c503_3" value="D"></td></tr>
-              <tr><td style="text-align:left;">Gérer des bases de données</td><td><input type="radio" name="c503_4" value="A"></td><td><input type="radio" name="c503_4" value="B"></td><td><input type="radio" name="c503_4" value="C"></td><td><input type="radio" name="c503_4" value="D"></td></tr>
-              <tr><td style="text-align:left;">Travailler en mode projet</td><td><input type="radio" name="c503_5" value="A"></td><td><input type="radio" name="c503_5" value="B"></td><td><input type="radio" name="c503_5" value="C"></td><td><input type="radio" name="c503_5" value="D"></td></tr>
-              <tr><td style="text-align:left;">Sécurité informatique</td><td><input type="radio" name="c503_6" value="A"></td><td><input type="radio" name="c503_6" value="B"></td><td><input type="radio" name="c503_6" value="C"></td><td><input type="radio" name="c503_6" value="D"></td></tr>
-            </tbody>
-          </table>
-          <div style="text-align:center; margin-top:20px;">
-            <button class="btn-download btn-save" onclick="saveEval('503')">Copier pour GitHub</button>
-            <button class="btn-download" style="background:#ef4444; margin-left:10px;" onclick="clearEval('503')">Effacer</button>
-          </div>
-          <div id="saved-msg-503" class="saved-msg">
-            SAE 503 → Copié ! Colle dans <code>sae503-eval.json</code>
-          </div>
-        </div>
-      </div>
-
+      <!-- Autres projets S1 -->
+      <div class="project-card"><h3>Projet 2 – À compléter</h3><p>Description…</p></div>
+      <div class="project-card"><h3>Projet 3 – À compléter</h3><p>Description…</p></div>
     </div>
-    <!-- Fin Semestre 1 -->
 
-    <!-- SEMESTRE 2 (vide pour l'instant) -->
+    <!-- SEMESTRE 2 -->
     <div id="s2" class="semestre">
-      <div class="project-card"><h3>Projets du semestre 2 à venir…</h3></div>
+      <div class="project-card"><h3>Projet 1 – À compléter</h3><p>Description…</p></div>
     </div>
   </div>
 </div>
 
-<!-- SECTION TRAVAIL EN ENTREPRISE -->
+<!-- SECTION TRAVAIL EN ENTREPRISE (inchangée) -->
 <div id="entreprise" style="display:none; max-width:900px; margin:30px auto; padding:20px;">
   <div class="project-card">
     <h3>Travail en entreprise – IT2i</h3>
@@ -212,7 +167,6 @@
 </div>
 
 <script>
-// Navigation
 function showTab(id, el){
   document.querySelectorAll('.semestre').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -222,51 +176,56 @@ function showTab(id, el){
 function showMain(section){
   document.getElementById('tabs-sae').style.display = section==='sae' ? 'flex' : 'none';
   document.getElementById('content-sae').style.display = section==='sae' ? 'block' : 'none';
-  document.getElementById('entreprise').style.display = section==='entre536prise' ? 'block' : 'none';
+  document.getElementById('entreprise').style.display = section==='entreprise' ? 'block' : 'none';
 }
 
-// Afficher/masquer une auto-évaluation
 function toggleEval(id){
   const el = document.getElementById(id);
   el.style.display = el.style.display === 'block' ? 'none' : 'block';
-  if(el.style.display === 'block') loadEval(id.split('-').pop());
+  if(el.style.display === 'block') loadEval();
 }
 
-// Chargement générique
-async function loadEval(sae) {
+// Chargement auto du fichier sae501-eval.json (même dossier)
+async function loadEval() {
   try {
-    const res = await fetch(`sae${sae}-eval.json?t=${Date.now()}`);
+    const res = await fetch('sae501-eval.json?t=' + Date.now());
     const data = await res.json();
     for(let i=1; i<=6; i++){
       if(data[`c${i}`]) {
-        const radio = document.querySelector(`input[name="c${sae}_${i}"][value="${data[`c${i}`]}"]`);
-        if(radio) radio.checked = true;
+        document.querySelector(`input[name="c${i}"][value="${data[`c${i}`]}"]`).checked = true;
       }
     }
   } catch(e) {
-    console.log(`sae${sae}-eval.json pas encore créé`);
+    console.log("sae501-eval.json pas encore créé → notes vides");
   }
 }
 
-// Sauvegarde générique (copie dans presse-papier)
-async function saveEval(sae) {
+// Copie le JSON dans le presse-papier pour le coller sur GitHub
+async function saveEval() {
   const data = {};
   for(let i=1; i<=6; i++){
-    const sel = document.querySelector(`input[name="c${sae}_${i}"]:checked`);
+    const sel = document.querySelector(`input[name="c${i}"]:checked`);
     data[`c${i}`] = sel ? sel.value : "";
   }
-  await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-  const msg = document.getElementById(`saved-msg-${sae}`);
+  const json = JSON.stringify(data, null, 2);
+  await navigator.clipboard.writeText(json);
+  const msg = document.getElementById('saved-msg');
   msg.style.display = 'block';
   setTimeout(() => msg.style.display = 'none', 8000);
 }
 
-// Effacer
-function clearEval(sae) {
-  if(confirm("Effacer cette auto-évaluation ?")) {
-    document.querySelectorAll(`#auto-eval-sae${sae} input[type="radio"]`).forEach(r => r.checked = false);
+function clearEval() {
+  if(confirm("Effacer toutes les notes ?")) {
+    document.querySelectorAll('#auto-eval-sae501 input[type="radio"]').forEach(r => r.checked = false);
   }
 }
+
+// Au chargement de la page
+window.addEventListener('load', () => {
+  if(document.getElementById('auto-eval-sae501').style.display === 'block'){
+    loadEval();
+  }
+});
 </script>
 </body>
 </html>
