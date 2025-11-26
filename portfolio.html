@@ -185,6 +185,43 @@
 <!-- SECTION TRAVAIL EN ENTREPRISE -->
 <div id="entreprise" style="display:none; max-width:900px; margin:30px auto; padding:20px;">
   <div class="project-card">
+
+  <div class="project-card">
+      <h3>Projet 1 – Rapport automatique de sauvegardes quotidiennes</h3>
+      <p>
+        <strong>Contexte :</strong> L’entreprise IT2i effectuait manuellement chaque matin la vérification des sauvegardes Veeam/Nakivo de plusieurs dizaines de clients. Cela prenait beaucoup de temps et était source d’erreurs.<br><br>
+
+        <strong>Mission confiée :</strong> Automatiser entièrement la génération et l’envoi d’un rapport PDF clair chaque jour.<br><br>
+
+        <strong>Réalisation (octobre-novembre 2025) :</strong>
+        <ul>
+          <li>Création d’un script Java qui se connecte en SSH aux différents serveurs de sauvegarde.</li>
+          <li>Récupération des logs et statuts des jobs de sauvegarde de la veille.</li>
+          <li>Génération automatique d’un rapport PDF esthétique (avec iText 7) contenant :
+            <ul>
+              <li>Statut global (succès / échec / avertissement)</li>
+              <li>Liste détaillée des clients avec date, taille sauvegardée, durée</li>
+              <li>Graphiques simples (camembert taux de réussite)</li>
+            </ul>
+          </li>
+          <li>Envoi automatique par e-mail via Gmail API avec Google Apps Script (pour contourner les restrictions SMTP classiques).</li>
+          <li>Planification quotidienne via cron (Linux) + tâche planifiée Windows.</li>
+        </ul>
+        <br>
+        <strong>Résultat :</strong><br>
+        Gain de 30 à 45 minutes par jour pour l’équipe technique + fiabilité accrue (plus d’oublis) + rapport beaucoup plus lisible pour les clients finaux quand on leur transmet.
+      </p>
+
+      <a class="btn-download" href="Rapport-Simple-Sauvegardes-Quotidien.pdf" download>
+        Télécharger l’exemple de rapport généré
+      </a>
+      <a class="btn-download" href="script-rapport-sauvegarde.java" download style="margin-left:15px;">
+        Télécharger le code source Java
+      </a>
+      <button class="btn-download btn-eval" onclick="toggleEval('auto-eval-stage1')" style="margin-left:15px;">
+        Auto-évaluation stage
+      </button>
+    
     <h3>Travail en entreprise – IT2i</h3>
     <p>
       <strong>Semaine du 20 au 24 octobre :</strong><br>
@@ -234,7 +271,31 @@ function showMain(section){
   }
 }
 // =========================================================
+// Ajoute ça dans ton <script> existant
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    const name = this.name;
+    if (name.startsWith('st1_')) {
+      saveEval('stage1');
+    }
+  });
+});
 
+async function saveEval(type) {
+  if (type === 'stage1') {
+    const data = {};
+    for(let i = 1; i <= 5; i++){
+      const sel = document.querySelector(`input[name="st1_${i}"]:checked`);
+      data[`c${i}`] = sel ? sel.value : "";
+    }
+    await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    const msg = document.getElementById('saved-msg-stage1');
+    if(msg) {
+      msg.style.display = 'block';
+      setTimeout(() => msg.style.display = 'none', 6000);
+    }
+  }
+}
 function showTab(id, el){
   document.querySelectorAll('.semestre').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -293,3 +354,4 @@ async function saveEval(sae) {
 </script>
 </body>
 </html>
+
