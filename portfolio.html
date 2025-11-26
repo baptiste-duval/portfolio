@@ -251,26 +251,42 @@ async function loadEval(sae) {
   try {
     const res = await fetch(`sae${sae}-eval.json?t=${Date.now()}`);
     const data = await res.json();
-    for(let i=1; i<=6; i++){
+
+    for(let i = 1; i <= 6; i++){
       if(data[`c${i}`]) {
-        const radio = document.querySelector(`input[name="c${sae}_${i}"][value="${data[`c${i}`]}"]`);
-        if(radio) radio.checked = true;
+        // Cas spécial SAE501 : les name sont "c1", "c2"...
+        if(sae === "501") {
+          const radio = document.querySelector(`input[name="c${i}"][value="${data[`c${i}`]}"]`);
+          if(radio) radio.checked = true;
+        }
+        // Cas normal SAE502 et 503 : name="c502_1", etc.
+        else {
+          const radio = document.querySelector(`input[name="c${sae}_${i}"][value="${data[`c${i}`]}"]`);
+          if(radio) radio.checked = true;
+        }
       }
     }
   } catch(e) {
-    console.log(`sae${sae}-eval.json pas encore créé`);
+    console.log(`sae${sae}-eval.json pas trouvé ou vide`);
   }
 }
 
-// Sauvegarde (copie dans le presse-papier)
+// Sauvegarde : même logique (exception pour SAE501)
 async function saveEval(sae) {
   const data = {};
-  for(let i=1; i<=6; i++){
-    const sel = document.querySelector(`input[name="c${sae}_${i}"]:checked`);
+  for(let i = 1; i <= 6; i++){
+    let sel;
+    if(sae === "501") {
+      sel = document.querySelector(`input[name="c${i}"]:checked`);
+    } else {
+      sel = document.querySelector(`input[name="c${sae}_${i}"]:checked`);
+    }
     data[`c${i}`] = sel ? sel.value : "";
   }
   await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-  const msg = document.getElementById(`saved-msg-${sae}`);
+
+  const msgId = sae === "501" ? "saved-msg" : `saved-msg-${sae}`;
+  const msg = document.getElementById(msgId);
   if(msg) {
     msg.style.display = 'block';
     setTimeout(() => msg.style.display = 'none', 6000);
@@ -286,5 +302,6 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
 
 
