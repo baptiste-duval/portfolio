@@ -2,127 +2,217 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Hack | Baptiste Duval</title>
+    <title>KRUNKER_JS_CLONE</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Fira Code', monospace; background-color: #020617; color: #00ff41; overflow: hidden; }
-        .scanline { width: 100%; height: 100px; z-index: 10; background: linear-gradient(0deg, rgba(0, 255, 65, 0) 0%, rgba(0, 255, 65, 0.1) 50%, rgba(0, 255, 65, 0) 100%); opacity: 0.1; position: absolute; bottom: 100%; animation: scanline 6s linear infinite; pointer-events: none; }
-        @keyframes scanline { 0% { bottom: 100%; } 100% { bottom: -100px; } }
-        .crt::before { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none; }
-        .word-btn { transition: all 0.2s; cursor: pointer; padding: 0 4px; }
-        .word-btn:hover { background: #00ff41; color: #020617; }
-        #log::-webkit-scrollbar { width: 0px; }
+        body { margin: 0; overflow: hidden; background: #111; font-family: 'Oswald', sans-serif; }
+        #ui { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; padding: 30px; }
+        .crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: #00ff00; border-radius: 50%; transform: translate(-50%, -50%); border: 1px solid #000; }
+        #hitmarker { position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; transform: translate(-50%, -50%); opacity: 0; pointer-events: none; transition: 0.1s; }
+        .hm-line { position: absolute; width: 2px; height: 10px; background: red; left: 14px; }
+        .ammo-box { background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 5px; color: #fff; font-size: 32px; border-bottom: 4px solid #facc15; }
+        #reload-bar { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); width: 100px; height: 4px; background: rgba(255,255,255,0.2); display: none; }
+        #reload-fill { height: 100%; background: #fff; width: 0%; }
     </style>
 </head>
-<body class="h-screen flex items-center justify-center p-4 crt">
-    <div class="scanline"></div>
-
-    <div class="max-w-4xl w-full border-2 border-[#00ff41]/30 bg-[#020617] p-8 rounded shadow-[0_0_20px_rgba(0,255,65,0.2)]">
-        <header class="mb-8 border-b border-[#00ff41]/30 pb-4 flex justify-between items-end">
-            <div>
-                <h1 class="text-xl font-bold uppercase tracking-tighter">ROBCO INDUSTRIES (TM) TERMLINK</h1>
-                <p class="text-xs">TENTATIVES RESTANTES : <span id="attempts">4</span></p>
-            </div>
-            <div class="text-right text-[10px] opacity-70">
-                PORT: 8080<br>USER: BAPTISTE_DUVAL
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div id="grid-1" class="font-mono text-sm leading-relaxed opacity-80"></div>
-            <div id="grid-2" class="font-mono text-sm leading-relaxed opacity-80"></div>
-
-            <div class="border-l border-[#00ff41]/30 pl-6 flex flex-col h-[400px]">
-                <div id="log" class="flex-grow overflow-y-auto text-[11px] space-y-2 mb-4">
-                    <div>> INITIALISATION DU SYSTÈME...</div>
-                    <div>> VÉRIFICATION DES SECTEURS...</div>
-                    <div>> MOT DE PASSE REQUIS.</div>
-                </div>
-                <div class="text-xs border-t border-[#00ff41]/30 pt-4">
-                    STATUS: <span id="status" class="animate-pulse">EN ATTENTE</span>
-                </div>
-            </div>
+<body>
+    <div id="ui">
+        <div class="flex justify-between">
+            <div class="text-white text-4xl font-bold tracking-tighter italic">KRUNKER_CLONE</div>
+            <div id="score" class="text-white text-4xl font-bold italic">SCORE: 0</div>
         </div>
-        
-        <div class="mt-8 text-center">
-            <a href="index.html" class="text-[10px] uppercase border border-[#00ff41] px-4 py-1 hover:bg-[#00ff41] hover:text-black transition">Quitter le système</a>
+        <div id="reload-bar"><div id="reload-fill"></div></div>
+        <div class="flex justify-end">
+            <div class="ammo-box"><span id="ammo">30</span> / 120</div>
         </div>
+    </div>
+    <div class="crosshair"></div>
+    <div id="hitmarker">
+        <div class="hm-line" style="transform: rotate(45deg) translateY(-10px);"></div>
+        <div class="hm-line" style="transform: rotate(135deg) translateY(-10px);"></div>
+        <div class="hm-line" style="transform: rotate(225deg) translateY(-10px);"></div>
+        <div class="hm-line" style="transform: rotate(315deg) translateY(-10px);"></div>
     </div>
 
     <script>
-        const WORDS = ["NETWORK", "ROUTING", "STORAGE", "VIRTUAL", "DYNAMIC", "RECORDS", "SERVICE", "KITCHEN", "FIREWALL", "SYSTEMS", "KEYWORD", "PHANTOM", "CONTROL", "MONITOR", "PROTECT"];
-        let targetWord = "";
-        let attempts = 4;
-        const wordLength = 7;
+        let scene, camera, renderer, gun, muzzleFlash;
+        let moveState = { fwd: false, bwd: false, left: false, right: false, jump: false };
+        let velocity = new THREE.Vector3();
+        let canJump = true, ammo = 30, score = 0, isReloading = false;
+        let targets = [], bullets = [];
 
-        function initGame() {
-            targetWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-            console.log("Solution: " + targetWord); // Pour toi ;)
-            
-            renderGrid("grid-1");
-            renderGrid("grid-2");
-        }
+        init();
+        animate();
 
-        function renderGrid(containerId) {
-            const container = document.getElementById(containerId);
-            let html = "";
-            for (let i = 0; i < 15; i++) {
-                let addr = "0x" + Math.floor(Math.random() * 65535).toString(16).toUpperCase().padStart(4, '0');
-                let noise = generateNoise(12);
-                
-                // Une chance sur 5 d'insérer un mot
-                if (Math.random() > 0.8 && WORDS.length > 0) {
-                    let word = WORDS[Math.floor(Math.random() * WORDS.length)];
-                    html += `<div>${addr} ${noise.substring(0, 3)}<span class="word-btn" onclick="checkWord('${word}')">${word}</span>${noise.substring(3, 5)}</div>`;
-                } else {
-                    html += `<div>${addr} ${noise}</div>`;
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xaaccff); // Ciel bleu Krunker
+            scene.fog = new THREE.Fog(0xaaccff, 0, 150);
+
+            camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.rotation.order = 'YXZ';
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambient);
+
+            // SOL
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0x444444 }));
+            floor.rotation.x = -Math.PI / 2;
+            scene.add(floor);
+
+            // OBSTACLES (Blocks)
+            const boxGeo = new THREE.BoxGeometry(4, 4, 4);
+            const boxMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+            for(let i=0; i<20; i++) {
+                let box = new THREE.Mesh(boxGeo, boxMat);
+                box.position.set((Math.random()-0.5)*100, 2, (Math.random()-0.5)*100);
+                scene.add(box);
+            }
+
+            // ARME (Block Style)
+            gun = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.8), new THREE.MeshStandardMaterial({color: 0x222222}));
+            const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.4), new THREE.MeshStandardMaterial({color: 0x111111}));
+            barrel.position.z = -0.4;
+            muzzleFlash = new THREE.PointLight(0xffaa00, 0, 2);
+            muzzleFlash.position.z = -0.8;
+            gun.add(body, barrel, muzzleFlash);
+            scene.add(gun);
+
+            // CIBLES (Dummy)
+            for(let i=0; i<10; i++) spawnTarget();
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // CONTROLES
+            document.addEventListener('mousedown', () => { if(document.pointerLockElement) shoot(); else document.body.requestPointerLock(); });
+            document.addEventListener('mousemove', (e) => {
+                if(document.pointerLockElement) {
+                    camera.rotation.y -= e.movementX * 0.002;
+                    camera.rotation.x -= e.movementY * 0.002;
+                    camera.rotation.x = Math.max(-1.5, Math.min(1.5, camera.rotation.x));
                 }
-            }
-            container.innerHTML = html;
+            });
+
+            const keyHandle = (val) => (e) => {
+                const code = e.code;
+                if(code === 'KeyW' || code === 'KeyZ') moveState.fwd = val;
+                if(code === 'KeyS') moveState.bwd = val;
+                if(code === 'KeyA' || code === 'KeyQ') moveState.left = val;
+                if(code === 'KeyD') moveState.right = val;
+                if(code === 'Space') moveState.jump = val;
+                if(val && code === 'KeyR') reload();
+            };
+            document.addEventListener('keydown', keyHandle(true));
+            document.addEventListener('keyup', keyHandle(false));
         }
 
-        function generateNoise(len) {
-            const chars = "!@#$%^&*()_+=-[]{}|;:,.<>?/";
-            let result = "";
-            for (let i = 0; i < len; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-            return result;
+        function spawnTarget() {
+            const geo = new THREE.BoxGeometry(1.5, 3, 1.5);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xff4444 });
+            const target = new THREE.Mesh(geo, mat);
+            target.position.set((Math.random()-0.5)*80, 1.5, (Math.random()-0.5)*80);
+            scene.add(target);
+            targets.push(target);
         }
 
-        function checkWord(word) {
-            if (attempts <= 0) return;
+        function shoot() {
+            if(ammo <= 0 || isReloading) { reload(); return; }
+            ammo--;
+            document.getElementById('ammo').innerText = ammo;
 
-            const log = document.getElementById('log');
-            let likeness = 0;
-            
-            // Calcul de la ressemblance (likeness)
-            for (let i = 0; i < word.length; i++) {
-                if (word[i] === targetWord[i]) likeness++;
+            // Recul visuel
+            gun.position.z += 0.15;
+            muzzleFlash.intensity = 2;
+            setTimeout(() => muzzleFlash.intensity = 0, 50);
+
+            // Raycasting (Détection de tir)
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+            const intersects = raycaster.intersectObjects(targets);
+
+            if(intersects.length > 0) {
+                const hit = intersects[0].object;
+                scene.remove(hit);
+                targets = targets.filter(t => t !== hit);
+                score += 100;
+                document.getElementById('score').innerText = `SCORE: ${score}`;
+                showHitmarker();
+                spawnTarget();
             }
+        }
 
-            const entry = document.createElement('div');
-            entry.innerHTML = `> ${word}<br>> RÉSULTAT : ${likeness}/${wordLength} CORRECT(S)`;
-            log.appendChild(entry);
-            log.scrollTop = log.scrollHeight;
+        function showHitmarker() {
+            const hm = document.getElementById('hitmarker');
+            hm.style.opacity = '1';
+            setTimeout(() => hm.style.opacity = '0', 100);
+        }
 
-            if (word === targetWord) {
-                document.getElementById('status').innerText = "ACCÈS AUTORISÉ";
-                document.getElementById('status').classList.remove('text-[#00ff41]');
-                document.getElementById('status').classList.add('text-cyan-400');
-                alert("SYSTÈME DÉVERROUILLÉ. BIENVENUE ADMIN.");
-            } else {
-                attempts--;
-                document.getElementById('attempts').innerText = attempts;
-                if (attempts === 0) {
-                    document.getElementById('status').innerText = "TERMINAL VERROUILLÉ";
-                    alert("ÉCHEC CRITIQUE. ALERTE SÉCURITÉ ENVOYÉE.");
-                    location.reload();
+        function reload() {
+            if(isReloading || ammo === 30) return;
+            isReloading = true;
+            document.getElementById('reload-bar').style.display = 'block';
+            let fill = document.getElementById('reload-fill');
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                fill.style.width = progress + '%';
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    ammo = 30;
+                    document.getElementById('ammo').innerText = ammo;
+                    document.getElementById('reload-bar').style.display = 'none';
+                    isReloading = false;
                 }
-            }
+            }, 50);
         }
 
-        initGame();
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // PHYSIQUE MOUVEMENT
+            const damping = 0.9;
+            const accel = 0.015;
+            
+            if(moveState.fwd) velocity.z -= accel;
+            if(moveState.bwd) velocity.z += accel;
+            if(moveState.left) velocity.x -= accel;
+            if(moveState.right) velocity.x += accel;
+
+            velocity.x *= damping;
+            velocity.z *= damping;
+
+            // Saut
+            if(moveState.jump && canJump) {
+                velocity.y = 0.25;
+                canJump = false;
+            }
+            velocity.y -= 0.01; // Gravité
+
+            camera.position.add(new THREE.Vector3(velocity.x, 0, velocity.z).applyQuaternion(camera.quaternion));
+            camera.position.y += velocity.y;
+
+            if(camera.position.y <= 1.7) {
+                camera.position.y = 1.7;
+                velocity.y = 0;
+                canJump = true;
+            }
+
+            // ARME : Suivi fluide
+            gun.position.copy(camera.position);
+            gun.quaternion.copy(camera.quaternion);
+            gun.translateX(0.3);
+            gun.translateY(-0.25);
+            gun.translateZ(-0.5);
+            // Lissage du recul
+            gun.position.lerp(camera.position, 0.1);
+
+            renderer.render(scene, camera);
+        }
     </script>
 </body>
 </html>
