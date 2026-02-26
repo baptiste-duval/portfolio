@@ -2,29 +2,41 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>KRUNKER_NUKETOWN</title>
+    <title>ULTIMATE_NUKETOWN_ZOMBIES</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Oswald', sans-serif; }
         #ui { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; padding: 25px; }
-        .crosshair { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; transform: translate(-50%, -50%); border: 2px solid rgba(0,255,0,0.8); border-radius: 50%; }
-        #hitmarker { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; transform: translate(-50%, -50%); opacity: 0; transition: 0.05s; }
+        .crosshair { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%); border: 2px solid #00ff00; border-radius: 50%; }
+        #hitmarker { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; transform: translate(-50%, -50%); opacity: 0; pointer-events: none; }
         .hm { position: absolute; width: 3px; height: 15px; background: white; left: 18px; }
-        .ammo { font-size: 48px; color: white; text-shadow: 2px 2px #000; }
-        #killfeed { position: absolute; top: 100px; right: 20px; color: #fff; text-align: right; }
+        #flash { position: absolute; inset: 0; background: red; opacity: 0; pointer-events: none; }
+        .stats-box { background: rgba(0,0,0,0.6); padding: 15px; border-radius: 8px; color: white; border-left: 5px solid #00f2ff; }
     </style>
 </head>
 <body>
+    <div id="flash"></div>
     <div id="ui">
         <div class="flex justify-between items-start">
-            <div class="text-4xl text-white italic">NUKETOWN_ALPHA</div>
-            <div id="killfeed"></div>
+            <div class="stats-box">
+                <div class="text-xl">SCORE: <span id="score-val">0</span></div>
+                <div class="text-sm opacity-70">KILLS: <span id="kill-val">0</span></div>
+            </div>
+            <div class="text-right text-white">
+                <div class="text-4xl italic">NUKETOWN Z</div>
+                <div id="weapon-name" class="text-yellow-400">RIFLE</div>
+            </div>
         </div>
         <div class="flex justify-between items-end">
-            <div class="text-white text-2xl">HP: 100</div>
-            <div class="ammo"><span id="ammo-val">30</span>/90</div>
+            <div class="stats-box w-64">
+                <div class="flex justify-between mb-1 text-xs"><span>HP</span><span id="hp-txt">100</span></div>
+                <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div id="hp-bar" class="h-full bg-green-500 w-full transition-all"></div>
+                </div>
+            </div>
+            <div class="text-white text-6xl italic"><span id="ammo-val">30</span><span class="text-2xl opacity-50">/90</span></div>
         </div>
     </div>
     <div class="crosshair"></div>
@@ -36,10 +48,16 @@
     </div>
 
     <script>
-        let scene, camera, renderer, gun;
+        let scene, camera, renderer, gun, raycaster;
         let moveState = { fwd: false, bwd: false, l: false, r: false, jump: false };
-        let vel = new THREE.Vector3(), canJump = true, ammo = 30;
-        let colliders = [], targets = [];
+        let vel = new THREE.Vector3(), canJump = true;
+        let colliders = [], targets = [], chests = [];
+        let player = { hp: 100, ammo: 30, score: 0, kills: 0, weapon: 'rifle' };
+
+        const WEAPONS = {
+            rifle: { name: "ASSAULT RIFLE", mag: 30, rate: 100, recoil: 0.03, spread: 0.02 },
+            sniper: { name: "L118A SNIPER", mag: 5, rate: 1200, recoil: 0.15, spread: 0.001 }
+        };
 
         init();
         animate();
@@ -51,38 +69,37 @@
 
             camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 1000);
             camera.rotation.order = 'YXZ';
-            camera.position.set(0, 1.7, 40);
+            camera.position.set(0, 1.7, 45);
 
-            const light = new THREE.DirectionalLight(0xffffff, 1);
-            light.position.set(10, 50, 10);
-            scene.add(light, new THREE.AmbientLight(0xffffff, 0.6));
+            const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+            sun.position.set(50, 100, 50);
+            scene.add(sun, new THREE.AmbientLight(0xffffff, 0.5));
 
             // SOL
-            addBox(0, -0.5, 0, 200, 1, 200, 0x555555, false); // Route
-            
-            // --- ARCHITECTURE NUKETOWN ---
-            // Maison Verte (Gauche)
-            addHouse(-25, 0, 0, 0x44aa44);
-            // Maison Jaune (Droite)
-            addHouse(25, 0, 0, 0xaaaa44);
-            // Bus Central
-            addBox(0, 1.5, 0, 4, 3, 12, 0x3333ff);
-            // Camion de déménagement
-            addBox(8, 2, 10, 4, 4, 8, 0xdddddd);
-            
-            // CIBLES (Ennemis statiques pour le test)
-            for(let i=0; i<8; i++) spawnTarget();
+            createBox(0, -0.5, 0, 300, 1, 300, 0x333333, false);
+
+            // NUKETOWN MAP
+            createHouse(-25, 0, 0x44aa44); // Maison Verte
+            createHouse(25, 0, 0xaaaa44);  // Maison Jaune
+            createBox(0, 1.5, 0, 5, 3, 12, 0x2222ff); // Bus
+            createBox(12, 2, 15, 5, 4, 10, 0xdddddd); // Camion
+
+            // SPAWN INITIAL
+            for(let i=0; i<15; i++) spawnZombie();
+            for(let i=0; i<5; i++) spawnChest();
 
             // ARME
             gun = new THREE.Group();
-            const gBody = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.8), new THREE.MeshStandardMaterial({color: 0x111111}));
+            const gBody = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.9), new THREE.MeshStandardMaterial({color: 0x111111}));
             gun.add(gBody);
             scene.add(gun);
 
+            raycaster = new THREE.Raycaster();
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
+            // CONTROLES
             document.addEventListener('mousedown', () => { if(document.pointerLockElement) shoot(); else document.body.requestPointerLock(); });
             window.addEventListener('keydown', (e) => handleKey(e.code, true));
             window.addEventListener('keyup', (e) => handleKey(e.code, false));
@@ -95,7 +112,7 @@
             });
         }
 
-        function addBox(x, y, z, w, h, d, col, isObstacle = true) {
+        function createBox(x, y, z, w, h, d, col, isObstacle = true) {
             const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({color: col}));
             mesh.position.set(x, y, z);
             scene.add(mesh);
@@ -103,9 +120,23 @@
             return mesh;
         }
 
-        function addHouse(x, z, rot, col) {
-            addBox(x, 4, z, 15, 8, 20, col); // Structure
-            addBox(x, 8.5, z, 16, 1, 21, 0x333333); // Toit
+        function createHouse(x, z, col) {
+            createBox(x, 4, z, 18, 8, 22, col); // Main
+            createBox(x, 8.5, z, 20, 1, 24, 0x222222); // Roof
+        }
+
+        function spawnZombie() {
+            const z = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.5, 1.2), new THREE.MeshStandardMaterial({color: 0x1a5a1a}));
+            z.position.set((Math.random()-0.5)*150, 1.25, (Math.random()-0.5)*150);
+            scene.add(z);
+            targets.push(z);
+        }
+
+        function spawnChest() {
+            const c = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), new THREE.MeshStandardMaterial({color: 0xffaa00, emissive: 0xffaa00, emissiveIntensity: 0.5}));
+            c.position.set((Math.random()-0.5)*100, 0.75, (Math.random()-0.5)*100);
+            scene.add(c);
+            chests.push(c);
         }
 
         function handleKey(code, val) {
@@ -114,80 +145,111 @@
             if(code === 'KeyA' || code === 'KeyQ') moveState.l = val;
             if(code === 'KeyD') moveState.r = val;
             if(code === 'Space') moveState.jump = val;
+            if(val && code === 'Digit1') switchWeapon('rifle');
+            if(val && code === 'Digit2') switchWeapon('sniper');
         }
 
-        function spawnTarget() {
-            const t = addBox((Math.random()-0.5)*80, 1.5, (Math.random()-0.5)*80, 1.2, 2.5, 1.2, 0xff0000);
-            targets.push(t);
+        function switchWeapon(type) {
+            player.weapon = type;
+            player.ammo = WEAPONS[type].mag;
+            document.getElementById('weapon-name').innerText = WEAPONS[type].name;
+            updateHUD();
         }
 
         function shoot() {
-            if(ammo <= 0) return;
-            ammo--; document.getElementById('ammo-val').innerText = ammo;
+            if(player.ammo <= 0) return;
+            const w = WEAPONS[player.weapon];
+            player.ammo--;
+            updateHUD();
             
-            // RECUL
-            gun.position.z += 0.1;
+            gun.position.z += w.recoil * 5; // Kickback
 
-            // --- SYSTÈME DE COLLISION DE TIR ---
-            const ray = new THREE.Raycaster();
-            ray.setFromCamera(new THREE.Vector2(0,0), camera);
-            
-            // On vérifie TOUT ce que le rayon touche (murs + ennemis)
-            const allHits = ray.intersectObjects([...colliders, ...targets]);
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+            const hits = raycaster.intersectObjects([...colliders, ...targets]);
 
-            if(allHits.length > 0) {
-                const closestHit = allHits[0];
-                
-                // Si l'objet le plus proche est une CIBLE, on valide le kill
-                if(targets.includes(closestHit.object)) {
-                    scene.remove(closestHit.object);
-                    targets = targets.filter(t => t !== closestHit.object);
+            if(hits.length > 0) {
+                const hit = hits[0];
+                if(targets.includes(hit.object)) {
+                    scene.remove(hit.object);
+                    targets = targets.filter(t => t !== hit.object);
+                    player.score += 100; player.kills++;
                     showHitmarker();
-                    spawnTarget();
-                } 
-                // Si c'est un mur (dans colliders), le rayon s'arrête et on ne fait rien
+                    spawnZombie();
+                    updateHUD();
+                }
             }
         }
 
         function showHitmarker() {
             const h = document.getElementById('hitmarker');
             h.style.opacity = '1';
-            setTimeout(() => h.style.opacity = '0', 80);
+            setTimeout(() => h.style.opacity = '0', 100);
+        }
+
+        function updateHUD() {
+            document.getElementById('ammo-val').innerText = player.ammo;
+            document.getElementById('score-val').innerText = player.score;
+            document.getElementById('kill-val').innerText = player.kills;
+            document.getElementById('hp-bar').style.width = player.hp + '%';
+            document.getElementById('hp-txt').innerText = Math.ceil(player.hp);
         }
 
         function animate() {
             requestAnimationFrame(animate);
             
-            // PHYSIQUE MOUVEMENT
-            const friction = 0.9;
-            const acc = 0.02;
-            if(moveState.fwd) vel.z -= acc;
-            if(moveState.bwd) vel.z += acc;
-            if(moveState.l) vel.x -= acc;
-            if(moveState.r) vel.x += acc;
+            // PHYSIQUE KRUNKER
+            const friction = 0.92;
+            const speed = 0.025;
+            if(moveState.fwd) vel.z -= speed;
+            if(moveState.bwd) vel.z += speed;
+            if(moveState.l) vel.x -= speed;
+            if(moveState.r) vel.x += speed;
 
             vel.x *= friction; vel.z *= friction;
-            if(moveState.jump && canJump) { vel.y = 0.22; canJump = false; }
-            vel.y -= 0.01;
+            if(moveState.jump && canJump) { vel.y = 0.25; canJump = false; }
+            vel.y -= 0.01; // Gravité
 
-            // Collision déplacement (Basique)
+            // COLLISIONS MURS
             const nextPos = camera.position.clone().add(new THREE.Vector3(vel.x, 0, vel.z).applyQuaternion(camera.quaternion));
-            let collision = false;
-            colliders.forEach(c => {
-                if(nextPos.distanceTo(c.position) < 4) collision = true;
-            });
+            let blocked = false;
+            colliders.forEach(c => { if(nextPos.distanceTo(c.position) < 5) blocked = true; });
 
-            if(!collision) {
-                camera.position.add(new THREE.Vector3(vel.x, 0, vel.z).applyQuaternion(camera.quaternion));
-            }
-            
+            if(!blocked) camera.position.add(new THREE.Vector3(vel.x, 0, vel.z).applyQuaternion(camera.quaternion));
             camera.position.y += vel.y;
+
             if(camera.position.y < 1.7) { camera.position.y = 1.7; vel.y = 0; canJump = true; }
 
-            // ARME
+            // IA ZOMBIES (Ne traversent pas les murs)
+            targets.forEach(z => {
+                const toP = new THREE.Vector3().subVectors(camera.position, z.position).normalize();
+                const nextZ = z.position.clone().addScaledVector(toP, 0.07);
+                let zBlocked = false;
+                colliders.forEach(c => { if(nextZ.distanceTo(c.position) < 5.5) zBlocked = true; });
+                if(!zBlocked) z.position.copy(nextZ);
+                
+                if(z.position.distanceTo(camera.position) < 2) {
+                    player.hp -= 0.5;
+                    document.getElementById('flash').style.opacity = 0.3;
+                    setTimeout(() => document.getElementById('flash').style.opacity = 0, 50);
+                    updateHUD();
+                    if(player.hp <= 0) location.reload();
+                }
+            });
+
+            // CHESTS
+            chests.forEach((c, i) => {
+                c.rotation.y += 0.05;
+                if(camera.position.distanceTo(c.position) < 2.5) {
+                    player.ammo = Math.min(player.ammo + 30, 90);
+                    scene.remove(c); chests.splice(i,1); spawnChest();
+                    updateHUD();
+                }
+            });
+
+            // GUN FOLLOW
             gun.position.copy(camera.position);
             gun.quaternion.copy(camera.quaternion);
-            gun.translateX(0.3); gun.translateY(-0.25); gun.translateZ(-0.6);
+            gun.translateX(0.35); gun.translateY(-0.25); gun.translateZ(-0.7);
             gun.position.lerp(camera.position, 0.1);
 
             renderer.render(scene, camera);
