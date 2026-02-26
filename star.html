@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>SPACE_BATTLE_ROYALE</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+        #hud { position: absolute; inset: 0; pointer-events: none; color: #00f2ff; padding: 20px; }
+        .target-box { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; border: 1px solid rgba(0, 242, 255, 0.5); transform: translate(-50%, -50%); }
+        #warning { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); color: #ff0000; font-size: 24px; display: none; font-weight: bold; text-shadow: 0 0 10px red; }
+        .bar { height: 4px; background: rgba(0, 242, 255, 0.2); width: 200px; margin-top: 5px; }
+        #hp-fill { height: 100%; background: #00f2ff; width: 100%; transition: 0.1s; }
+    </style>
+</head>
+<body>
+    <div id="warning">ZONE DE DANGER PROCHE !</div>
+    <div id="hud">
+        <div class="flex justify-between">
+            <div>
+                <div class="text-xl font-bold">SHIP_INTEGRITY</div>
+                <div class="bar"><div id="hp-fill"></div></div>
+            </div>
+            <div class="text-right">
+                <div class="text-xl">ENEMIES_REMAINING: <span id="count">12</span></div>
+                <div class="text-sm opacity-50">DISTANCE_TO_CENTER: <span id="dist">0</span>m</div>
+            </div>
+        </div>
+        <div class="target-box"></div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, ship;
+        let stars, asteroids = [], lasers = [], enemies = [];
+        let player = { hp: 100, speed: 0, maxSpeed: 1.2, kills: 0 };
+        let mouse = { x: 0, y: 0 };
+        let zoneRadius = 500;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // LUMIÈRES
+            scene.add(new THREE.AmbientLight(0x404040));
+            const sun = new THREE.PointLight(0xffffff, 1.5, 2000);
+            sun.position.set(100, 200, 100);
+            scene.add(sun);
+
+            // VAISSEAU DU JOUEUR (Style X-Wing simplifié)
+            ship = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 2), new THREE.MeshStandardMaterial({color: 0xcccccc}));
+            const wings = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 0.8), new THREE.MeshStandardMaterial({color: 0xcccccc}));
+            ship.add(body, wings);
+            scene.add(ship);
+
+            // ÉTOILES
+            const starGeo = new THREE.BufferGeometry();
+            const starPos = [];
+            for(let i=0; i<5000; i++) {
+                starPos.push((Math.random()-0.5)*1500, (Math.random()-0.5)*1500, (Math.random()-0.5)*1500);
+            }
+            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+            stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.7}));
+            scene.add(stars);
+
+            // ASTÉROÏDES
+            for(let i=0; i<150; i++) {
+                const size = 2 + Math.random() * 5;
+                const ast = new THREE.Mesh(
+                    new THREE.IcosahedronGeometry(size, 0),
+                    new THREE.MeshStandardMaterial({color: 0x666666, flatShading: true})
+                );
+                ast.position.set((Math.random()-0.5)*800, (Math.random()-0.5)*800, (Math.random()-0.5)*800);
+                ast.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+                scene.add(ast);
+                asteroids.push(ast);
+            }
+
+            // ENNEMIS (Chasseurs Rouges)
+            for(let i=0; i<12; i++) spawnEnemy();
+
+            // ZONE DE DANGER (Sphère de délimitation)
+            const zoneGeo = new THREE.SphereGeometry(zoneRadius, 32, 32);
+            const zoneMat = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true, transparent: true, opacity: 0.1});
+            const zone = new THREE.Mesh(zoneGeo, zoneMat);
+            scene.add(zone);
+
+            // ÉVÉNEMENTS
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            window.addEventListener('mousedown', shoot);
+            window.addEventListener('keydown', (e) => { if(e.code === 'Space') player.speed = player.maxSpeed; });
+            window.addEventListener('keyup', (e) => { if(e.code === 'Space') player.speed = 0.4; });
+            player.speed = 0.4;
+        }
+
+        function spawnEnemy() {
+            const eGroup = new THREE.Group();
+            const eBody = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({color: 0xff3333}));
+            eGroup.add(eBody);
+            eGroup.position.set((Math.random()-0.5)*600, (Math.random()-0.5)*600, (Math.random()-0.5)*600);
+            scene.add(eGroup);
+            enemies.push({mesh: eGroup, health: 3, lastShoot: 0});
+        }
+
+        function shoot() {
+            const laser = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, 4),
+                new THREE.MeshBasicMaterial({color: 0x00f2ff})
+            );
+            laser.rotation.x = Math.PI / 2;
+            laser.position.copy(ship.position);
+            laser.quaternion.copy(ship.quaternion);
+            laser.userData.velocity = new THREE.Vector3(0, 0, -4).applyQuaternion(ship.quaternion);
+            scene.add(laser);
+            lasers.push(laser);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // ROTATION ET MOUVEMENT DU VAISSEAU
+            ship.rotation.y -= mouse.x * 0.04;
+            ship.rotation.x += mouse.y * 0.04;
+            
+            const moveDir = new THREE.Vector3(0, 0, -player.speed).applyQuaternion(ship.quaternion);
+            ship.position.add(moveDir);
+
+            // CAMÉRA SUIT LE VAISSEAU
+            const camOffset = new THREE.Vector3(0, 1.5, 5).applyQuaternion(ship.quaternion);
+            camera.position.lerp(ship.position.clone().add(camOffset), 0.1);
+            camera.lookAt(ship.position);
+
+            // GESTION DES LASERS
+            lasers.forEach((l, i) => {
+                l.position.add(l.userData.velocity);
+                if(l.position.distanceTo(ship.position) > 1000) {
+                    scene.remove(l);
+                    lasers.splice(i, 1);
+                }
+
+                // Collision Lasers -> Ennemis
+                enemies.forEach((en, ei) => {
+                    if(l.position.distanceTo(en.mesh.position) < 3) {
+                        en.health--;
+                        scene.remove(l);
+                        lasers.splice(i, 1);
+                        if(en.health <= 0) {
+                            scene.remove(en.mesh);
+                            enemies.splice(ei, 1);
+                            document.getElementById('count').innerText = enemies.length;
+                        }
+                    }
+                });
+            });
+
+            // GESTION DES ENNEMIS (IA Simple)
+            enemies.forEach(en => {
+                en.mesh.lookAt(ship.position);
+                const dist = en.mesh.position.distanceTo(ship.position);
+                if(dist < 150) {
+                    en.mesh.position.add(new THREE.Vector3(0,0,0.2).applyQuaternion(en.mesh.quaternion));
+                    // L'ennemi tire si proche
+                    if(Date.now() - en.lastShoot > 2000) {
+                        en.lastShoot = Date.now();
+                        // (Optionnel: ajouter lasers ennemis ici)
+                    }
+                }
+            });
+
+            // GESTION DE LA ZONE
+            zoneRadius -= 0.02;
+            const distToCenter = ship.position.length();
+            document.getElementById('dist').innerText = Math.floor(distToCenter);
+            
+            if(distToCenter > zoneRadius) {
+                player.hp -= 0.2;
+                document.getElementById('warning').style.display = 'block';
+            } else {
+                document.getElementById('warning').style.display = 'none';
+            }
+
+            // UPDATE HUD
+            document.getElementById('hp-fill').style.width = player.hp + '%';
+            if(player.hp <= 0) location.reload();
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
