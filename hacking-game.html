@@ -2,94 +2,90 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>KRUNKER_JS_CLONE</title>
+    <title>KRUNKER_NUKETOWN</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #111; font-family: 'Oswald', sans-serif; }
-        #ui { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; padding: 30px; }
-        .crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: #00ff00; border-radius: 50%; transform: translate(-50%, -50%); border: 1px solid #000; }
-        #hitmarker { position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; transform: translate(-50%, -50%); opacity: 0; pointer-events: none; transition: 0.1s; }
-        .hm-line { position: absolute; width: 2px; height: 10px; background: red; left: 14px; }
-        .ammo-box { background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 5px; color: #fff; font-size: 32px; border-bottom: 4px solid #facc15; }
-        #reload-bar { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); width: 100px; height: 4px; background: rgba(255,255,255,0.2); display: none; }
-        #reload-fill { height: 100%; background: #fff; width: 0%; }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Oswald', sans-serif; }
+        #ui { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; padding: 25px; }
+        .crosshair { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; transform: translate(-50%, -50%); border: 2px solid rgba(0,255,0,0.8); border-radius: 50%; }
+        #hitmarker { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; transform: translate(-50%, -50%); opacity: 0; transition: 0.05s; }
+        .hm { position: absolute; width: 3px; height: 15px; background: white; left: 18px; }
+        .ammo { font-size: 48px; color: white; text-shadow: 2px 2px #000; }
+        #killfeed { position: absolute; top: 100px; right: 20px; color: #fff; text-align: right; }
     </style>
 </head>
 <body>
     <div id="ui">
-        <div class="flex justify-between">
-            <div class="text-white text-4xl font-bold tracking-tighter italic">KRUNKER_CLONE</div>
-            <div id="score" class="text-white text-4xl font-bold italic">SCORE: 0</div>
+        <div class="flex justify-between items-start">
+            <div class="text-4xl text-white italic">NUKETOWN_ALPHA</div>
+            <div id="killfeed"></div>
         </div>
-        <div id="reload-bar"><div id="reload-fill"></div></div>
-        <div class="flex justify-end">
-            <div class="ammo-box"><span id="ammo">30</span> / 120</div>
+        <div class="flex justify-between items-end">
+            <div class="text-white text-2xl">HP: 100</div>
+            <div class="ammo"><span id="ammo-val">30</span>/90</div>
         </div>
     </div>
     <div class="crosshair"></div>
     <div id="hitmarker">
-        <div class="hm-line" style="transform: rotate(45deg) translateY(-10px);"></div>
-        <div class="hm-line" style="transform: rotate(135deg) translateY(-10px);"></div>
-        <div class="hm-line" style="transform: rotate(225deg) translateY(-10px);"></div>
-        <div class="hm-line" style="transform: rotate(315deg) translateY(-10px);"></div>
+        <div class="hm" style="transform: rotate(45deg) translateY(-12px)"></div>
+        <div class="hm" style="transform: rotate(135deg) translateY(-12px)"></div>
+        <div class="hm" style="transform: rotate(225deg) translateY(-12px)"></div>
+        <div class="hm" style="transform: rotate(315deg) translateY(-12px)"></div>
     </div>
 
     <script>
-        let scene, camera, renderer, gun, muzzleFlash;
-        let moveState = { fwd: false, bwd: false, left: false, right: false, jump: false };
-        let velocity = new THREE.Vector3();
-        let canJump = true, ammo = 30, score = 0, isReloading = false;
-        let targets = [], bullets = [];
+        let scene, camera, renderer, gun;
+        let moveState = { fwd: false, bwd: false, l: false, r: false, jump: false };
+        let vel = new THREE.Vector3(), canJump = true, ammo = 30;
+        let colliders = [], targets = [];
 
         init();
         animate();
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xaaccff); // Ciel bleu Krunker
-            scene.fog = new THREE.Fog(0xaaccff, 0, 150);
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 0, 200);
 
-            camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 1000);
             camera.rotation.order = 'YXZ';
+            camera.position.set(0, 1.7, 40);
 
-            const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-            scene.add(ambient);
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(10, 50, 10);
+            scene.add(light, new THREE.AmbientLight(0xffffff, 0.6));
 
             // SOL
-            const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0x444444 }));
-            floor.rotation.x = -Math.PI / 2;
-            scene.add(floor);
+            addBox(0, -0.5, 0, 200, 1, 200, 0x555555, false); // Route
+            
+            // --- ARCHITECTURE NUKETOWN ---
+            // Maison Verte (Gauche)
+            addHouse(-25, 0, 0, 0x44aa44);
+            // Maison Jaune (Droite)
+            addHouse(25, 0, 0, 0xaaaa44);
+            // Bus Central
+            addBox(0, 1.5, 0, 4, 3, 12, 0x3333ff);
+            // Camion de déménagement
+            addBox(8, 2, 10, 4, 4, 8, 0xdddddd);
+            
+            // CIBLES (Ennemis statiques pour le test)
+            for(let i=0; i<8; i++) spawnTarget();
 
-            // OBSTACLES (Blocks)
-            const boxGeo = new THREE.BoxGeometry(4, 4, 4);
-            const boxMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
-            for(let i=0; i<20; i++) {
-                let box = new THREE.Mesh(boxGeo, boxMat);
-                box.position.set((Math.random()-0.5)*100, 2, (Math.random()-0.5)*100);
-                scene.add(box);
-            }
-
-            // ARME (Block Style)
+            // ARME
             gun = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.8), new THREE.MeshStandardMaterial({color: 0x222222}));
-            const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.4), new THREE.MeshStandardMaterial({color: 0x111111}));
-            barrel.position.z = -0.4;
-            muzzleFlash = new THREE.PointLight(0xffaa00, 0, 2);
-            muzzleFlash.position.z = -0.8;
-            gun.add(body, barrel, muzzleFlash);
+            const gBody = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.8), new THREE.MeshStandardMaterial({color: 0x111111}));
+            gun.add(gBody);
             scene.add(gun);
-
-            // CIBLES (Dummy)
-            for(let i=0; i<10; i++) spawnTarget();
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // CONTROLES
             document.addEventListener('mousedown', () => { if(document.pointerLockElement) shoot(); else document.body.requestPointerLock(); });
+            window.addEventListener('keydown', (e) => handleKey(e.code, true));
+            window.addEventListener('keyup', (e) => handleKey(e.code, false));
             document.addEventListener('mousemove', (e) => {
                 if(document.pointerLockElement) {
                     camera.rotation.y -= e.movementX * 0.002;
@@ -97,118 +93,101 @@
                     camera.rotation.x = Math.max(-1.5, Math.min(1.5, camera.rotation.x));
                 }
             });
+        }
 
-            const keyHandle = (val) => (e) => {
-                const code = e.code;
-                if(code === 'KeyW' || code === 'KeyZ') moveState.fwd = val;
-                if(code === 'KeyS') moveState.bwd = val;
-                if(code === 'KeyA' || code === 'KeyQ') moveState.left = val;
-                if(code === 'KeyD') moveState.right = val;
-                if(code === 'Space') moveState.jump = val;
-                if(val && code === 'KeyR') reload();
-            };
-            document.addEventListener('keydown', keyHandle(true));
-            document.addEventListener('keyup', keyHandle(false));
+        function addBox(x, y, z, w, h, d, col, isObstacle = true) {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({color: col}));
+            mesh.position.set(x, y, z);
+            scene.add(mesh);
+            if(isObstacle) colliders.push(mesh);
+            return mesh;
+        }
+
+        function addHouse(x, z, rot, col) {
+            addBox(x, 4, z, 15, 8, 20, col); // Structure
+            addBox(x, 8.5, z, 16, 1, 21, 0x333333); // Toit
+        }
+
+        function handleKey(code, val) {
+            if(code === 'KeyW' || code === 'KeyZ') moveState.fwd = val;
+            if(code === 'KeyS') moveState.bwd = val;
+            if(code === 'KeyA' || code === 'KeyQ') moveState.l = val;
+            if(code === 'KeyD') moveState.r = val;
+            if(code === 'Space') moveState.jump = val;
         }
 
         function spawnTarget() {
-            const geo = new THREE.BoxGeometry(1.5, 3, 1.5);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xff4444 });
-            const target = new THREE.Mesh(geo, mat);
-            target.position.set((Math.random()-0.5)*80, 1.5, (Math.random()-0.5)*80);
-            scene.add(target);
-            targets.push(target);
+            const t = addBox((Math.random()-0.5)*80, 1.5, (Math.random()-0.5)*80, 1.2, 2.5, 1.2, 0xff0000);
+            targets.push(t);
         }
 
         function shoot() {
-            if(ammo <= 0 || isReloading) { reload(); return; }
-            ammo--;
-            document.getElementById('ammo').innerText = ammo;
+            if(ammo <= 0) return;
+            ammo--; document.getElementById('ammo-val').innerText = ammo;
+            
+            // RECUL
+            gun.position.z += 0.1;
 
-            // Recul visuel
-            gun.position.z += 0.15;
-            muzzleFlash.intensity = 2;
-            setTimeout(() => muzzleFlash.intensity = 0, 50);
+            // --- SYSTÈME DE COLLISION DE TIR ---
+            const ray = new THREE.Raycaster();
+            ray.setFromCamera(new THREE.Vector2(0,0), camera);
+            
+            // On vérifie TOUT ce que le rayon touche (murs + ennemis)
+            const allHits = ray.intersectObjects([...colliders, ...targets]);
 
-            // Raycasting (Détection de tir)
-            const raycaster = new THREE.Raycaster();
-            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
-            const intersects = raycaster.intersectObjects(targets);
-
-            if(intersects.length > 0) {
-                const hit = intersects[0].object;
-                scene.remove(hit);
-                targets = targets.filter(t => t !== hit);
-                score += 100;
-                document.getElementById('score').innerText = `SCORE: ${score}`;
-                showHitmarker();
-                spawnTarget();
+            if(allHits.length > 0) {
+                const closestHit = allHits[0];
+                
+                // Si l'objet le plus proche est une CIBLE, on valide le kill
+                if(targets.includes(closestHit.object)) {
+                    scene.remove(closestHit.object);
+                    targets = targets.filter(t => t !== closestHit.object);
+                    showHitmarker();
+                    spawnTarget();
+                } 
+                // Si c'est un mur (dans colliders), le rayon s'arrête et on ne fait rien
             }
         }
 
         function showHitmarker() {
-            const hm = document.getElementById('hitmarker');
-            hm.style.opacity = '1';
-            setTimeout(() => hm.style.opacity = '0', 100);
-        }
-
-        function reload() {
-            if(isReloading || ammo === 30) return;
-            isReloading = true;
-            document.getElementById('reload-bar').style.display = 'block';
-            let fill = document.getElementById('reload-fill');
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5;
-                fill.style.width = progress + '%';
-                if(progress >= 100) {
-                    clearInterval(interval);
-                    ammo = 30;
-                    document.getElementById('ammo').innerText = ammo;
-                    document.getElementById('reload-bar').style.display = 'none';
-                    isReloading = false;
-                }
-            }, 50);
+            const h = document.getElementById('hitmarker');
+            h.style.opacity = '1';
+            setTimeout(() => h.style.opacity = '0', 80);
         }
 
         function animate() {
             requestAnimationFrame(animate);
-
-            // PHYSIQUE MOUVEMENT
-            const damping = 0.9;
-            const accel = 0.015;
             
-            if(moveState.fwd) velocity.z -= accel;
-            if(moveState.bwd) velocity.z += accel;
-            if(moveState.left) velocity.x -= accel;
-            if(moveState.right) velocity.x += accel;
+            // PHYSIQUE MOUVEMENT
+            const friction = 0.9;
+            const acc = 0.02;
+            if(moveState.fwd) vel.z -= acc;
+            if(moveState.bwd) vel.z += acc;
+            if(moveState.l) vel.x -= acc;
+            if(moveState.r) vel.x += acc;
 
-            velocity.x *= damping;
-            velocity.z *= damping;
+            vel.x *= friction; vel.z *= friction;
+            if(moveState.jump && canJump) { vel.y = 0.22; canJump = false; }
+            vel.y -= 0.01;
 
-            // Saut
-            if(moveState.jump && canJump) {
-                velocity.y = 0.25;
-                canJump = false;
+            // Collision déplacement (Basique)
+            const nextPos = camera.position.clone().add(new THREE.Vector3(vel.x, 0, vel.z).applyQuaternion(camera.quaternion));
+            let collision = false;
+            colliders.forEach(c => {
+                if(nextPos.distanceTo(c.position) < 4) collision = true;
+            });
+
+            if(!collision) {
+                camera.position.add(new THREE.Vector3(vel.x, 0, vel.z).applyQuaternion(camera.quaternion));
             }
-            velocity.y -= 0.01; // Gravité
+            
+            camera.position.y += vel.y;
+            if(camera.position.y < 1.7) { camera.position.y = 1.7; vel.y = 0; canJump = true; }
 
-            camera.position.add(new THREE.Vector3(velocity.x, 0, velocity.z).applyQuaternion(camera.quaternion));
-            camera.position.y += velocity.y;
-
-            if(camera.position.y <= 1.7) {
-                camera.position.y = 1.7;
-                velocity.y = 0;
-                canJump = true;
-            }
-
-            // ARME : Suivi fluide
+            // ARME
             gun.position.copy(camera.position);
             gun.quaternion.copy(camera.quaternion);
-            gun.translateX(0.3);
-            gun.translateY(-0.25);
-            gun.translateZ(-0.5);
-            // Lissage du recul
+            gun.translateX(0.3); gun.translateY(-0.25); gun.translateZ(-0.6);
             gun.position.lerp(camera.position, 0.1);
 
             renderer.render(scene, camera);
